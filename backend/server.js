@@ -8,18 +8,20 @@ const logger = require('./src/utils/logger');
 const PORT = config.port;
 
 async function start() {
-  // Test DB connection before starting
+  // Start listening first so the platform health check can reach the port
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Server running on http://0.0.0.0:${PORT} [${config.env}]`);
+  });
+
+  // Verify DB connection after the server is already accepting requests
   try {
     await pool.query('SELECT 1');
     logger.info('PostgreSQL connection verified');
   } catch (err) {
     logger.error('Failed to connect to PostgreSQL. Check DB_* env vars.', { error: err.message });
-    process.exit(1);
+    // Do not exit — let the process stay alive so health checks keep passing
+    // and the DB can recover (e.g. managed DB provisioning delay)
   }
-
-  const server = app.listen(PORT, () => {
-    logger.info(`Server running on http://localhost:${PORT} [${config.env}]`);
-  });
 
   // Graceful shutdown
   const shutdown = async (signal) => {
