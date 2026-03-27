@@ -4,6 +4,7 @@ services:
   - name: backend
     source_dir: backend
     github:
+      repo: adishakash/Student-Career-Counselor
       branch: main
       deploy_on_push: true
     run_command: node server.js
@@ -72,6 +73,7 @@ static_sites:
   - name: frontend
     source_dir: frontend
     github:
+      repo: adishakash/Student-Career-Counselor
       branch: main
       deploy_on_push: true
     build_command: npm run build
