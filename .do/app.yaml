@@ -7,6 +7,7 @@ services:
       repo: adishakash/Student-Career-Counselor
       branch: main
       deploy_on_push: true
+    build_command: npm ci
     run_command: node server.js
     environment_slug: node-js
     instance_size_slug: basic-xxs
@@ -20,7 +21,7 @@ services:
       - key: PORT
         value: "8080"
       - key: FRONTEND_URL
-        scope: RUN_TIME
+        value: ${APP_URL}
       # Database — fill in after creating a Managed PostgreSQL DB or link via DO DB
       - key: DB_HOST
         scope: RUN_TIME
@@ -76,9 +77,8 @@ static_sites:
       repo: adishakash/Student-Career-Counselor
       branch: main
       deploy_on_push: true
-    build_command: npm run build
+    build_command: npm ci && npm run build
     output_dir: dist
-    environment_slug: node-js
     routes:
       - path: /
     envs:
