@@ -6,10 +6,21 @@ const db = require('../../config/database');
 const { AppError } = require('../../middleware/errorHandler');
 const logger = require('../../utils/logger');
 
-const razorpay = new Razorpay({
-  key_id: config.razorpay.keyId,
-  key_secret: config.razorpay.keySecret,
-});
+// Lazily initialized — avoids a constructor throw at module-load time
+// when credentials are not yet present (e.g. during platform health checks).
+let _razorpay = null;
+function getRazorpay() {
+  if (!_razorpay) {
+    if (!config.razorpay.keyId || !config.razorpay.keySecret) {
+      throw new AppError('Payment gateway is not configured. Please contact support.', 503);
+    }
+    _razorpay = new Razorpay({
+      key_id: config.razorpay.keyId,
+      key_secret: config.razorpay.keySecret,
+    });
+  }
+  return _razorpay;
+}
 
 const RazorpayService = {
   /**
@@ -17,10 +28,7 @@ const RazorpayService = {
    * @returns {{ order, payment }}
    */
   async createOrder({ assessmentId, studentId, paymentType = 'new' }) {
-    if (!config.razorpay.keyId || !config.razorpay.keySecret) {
-      throw new AppError('Payment gateway is not configured. Please contact support.', 503);
-    }
-
+    const razorpay = getRazorpay(); // throws AppError 503 if credentials are missing
     const amount = config.razorpay.paidReportAmount;
 
     // Check for existing pending order (idempotency)
