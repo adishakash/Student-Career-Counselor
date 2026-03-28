@@ -91,6 +91,11 @@ const config = {
     secretAccessKey: process.env.DO_SPACES_SECRET || '',
   },
 
+  pdf: {
+    storagePath: process.env.PDF_STORAGE_PATH || './storage/pdfs',
+    baseUrl: process.env.PDF_BASE_URL || 'https://www.cadgurukul.com/pdfs',
+  },
+
   company: {
     name: 'CAD Gurukul',
     email: 'contact@cadgurukul.com',
