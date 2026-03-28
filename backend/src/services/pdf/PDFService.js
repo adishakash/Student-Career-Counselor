@@ -1,15 +1,8 @@
 'use strict';
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
 const config = require('../../config/config');
+const StorageService = require('../storage/StorageService');
 const logger = require('../../utils/logger');
-
-// Ensure PDF storage directory exists
-const storagePath = path.resolve(config.pdf.storagePath);
-if (!fs.existsSync(storagePath)) {
-  fs.mkdirSync(storagePath, { recursive: true });
-}
 
 // Brand colors
 const COLORS = {
@@ -44,12 +37,14 @@ const PDFService = {
     const timestamp = Date.now();
     const safeName = (student.name || 'student').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
     const filename = `report_${safeName}_${timestamp}.pdf`;
-    const filePath = path.join(storagePath, filename);
+    const key = `pdfs/${filename}`;
 
-    return new Promise((resolve, reject) => {
+    const buffer = await new Promise((resolve, reject) => {
       const doc = new PDFDocument({ size: 'A4', margin: 50, info: { Title: 'Career Counseling Report', Author: config.company.name } });
-      const stream = fs.createWriteStream(filePath);
-      doc.pipe(stream);
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
       if (reportType === 'paid') {
         PDFService._buildPaidReport(doc, student, reportContent, config.company);
@@ -58,13 +53,11 @@ const PDFService = {
       }
 
       doc.end();
-
-      stream.on('finish', () => {
-        logger.debug('PDF generated', { filename });
-        resolve({ filename, path: filePath });
-      });
-      stream.on('error', reject);
     });
+
+    await StorageService.upload(key, buffer);
+    logger.debug('PDF uploaded to Spaces', { key });
+    return { filename, key };
   },
 
   // ─── Shared helpers ──────────────────────────────────────────

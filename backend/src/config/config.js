@@ -32,7 +32,7 @@ function buildDbConfig() {
 }
 
 // Support comma-separated FRONTEND_URL for multiple allowed origins
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+const allowedOrigins = (process.env.FRONTEND_URL || 'https://www.cadgurukul.com')
   .split(',')
   .map((u) => u.trim())
   .filter(Boolean);
@@ -40,7 +40,7 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT, 10) || 5000,
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrl: process.env.FRONTEND_URL || 'https://www.cadgurukul.com',
   allowedOrigins,
 
   db: buildDbConfig(),
@@ -83,16 +83,19 @@ const config = {
     },
   },
 
-  pdf: {
-    storagePath: process.env.PDF_STORAGE_PATH || './storage/pdfs',
-    baseUrl: process.env.PDF_BASE_URL || 'http://localhost:5000/pdfs',
+  spaces: {
+    endpoint: process.env.DO_SPACES_ENDPOINT || 'https://nyc3.digitaloceanspaces.com',
+    region: process.env.DO_SPACES_REGION || 'nyc3',
+    bucket: process.env.DO_SPACES_BUCKET || '',
+    accessKeyId: process.env.DO_SPACES_KEY || '',
+    secretAccessKey: process.env.DO_SPACES_SECRET || '',
   },
 
   company: {
     name: 'CAD Gurukul',
     email: 'contact@cadgurukul.com',
     address: 'India',
-    website: process.env.FRONTEND_URL || 'http://localhost:5173',
+    website: process.env.FRONTEND_URL || 'https://www.cadgurukul.com',
   },
 };
 

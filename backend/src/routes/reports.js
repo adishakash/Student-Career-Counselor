@@ -120,7 +120,7 @@ router.post('/generate', async (req, res, next) => {
         upgradeToken,
       });
 
-      pdfPath = pdfResult.path;
+      pdfPath = pdfResult.key;
       pdfFilename = pdfResult.filename;
 
       // Save report to DB

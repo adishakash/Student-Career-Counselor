@@ -1,9 +1,8 @@
 'use strict';
 const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
 const config = require('../../config/config');
 const db = require('../../config/database');
+const StorageService = require('../storage/StorageService');
 const logger = require('../../utils/logger');
 
 let transporter = null;
@@ -52,12 +51,17 @@ const EmailService = {
       logId = logResult.rows[0].id;
 
       const attachments = [];
-      if (pdfPath && fs.existsSync(pdfPath)) {
-        attachments.push({
-          filename: `Career_Report_${studentName.split(' ')[0]}.pdf`,
-          path: pdfPath,
-          contentType: 'application/pdf',
-        });
+      if (pdfPath) {
+        try {
+          const pdfBuffer = await StorageService.download(pdfPath);
+          attachments.push({
+            filename: `Career_Report_${studentName.split(' ')[0]}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          });
+        } catch (downloadErr) {
+          logger.warn('Could not download PDF from Spaces for attachment', { key: pdfPath, error: downloadErr.message });
+        }
       }
 
       const info = await getTransporter().sendMail({
