@@ -4,8 +4,14 @@ require('dotenv').config();
 // Build db config — prefer DATABASE_URL (DigitalOcean managed DB) over individual vars
 function buildDbConfig() {
   if (process.env.DATABASE_URL) {
+    // Strip sslmode from the connection string so the pool-level ssl option
+    // is the sole authority. DigitalOcean URLs often include ?sslmode=require
+    // or ?sslmode=verify-full, which pg parses and uses to set
+    // rejectUnauthorized: true, overriding our { rejectUnauthorized: false }.
+    const dbUrl = new URL(process.env.DATABASE_URL);
+    dbUrl.searchParams.delete('sslmode');
     return {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: dbUrl.toString(),
       ssl: { rejectUnauthorized: false },
       max: 20,
       idleTimeoutMillis: 30000,
