@@ -16,4 +16,7 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    allowedHosts: ['monkfish-app-ae476.ondigitalocean.app'],
+  },
 });
