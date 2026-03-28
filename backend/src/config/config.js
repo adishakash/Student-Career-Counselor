@@ -64,7 +64,7 @@ const config = {
   company: {
     name: 'Akash Universal Solutions',
     email: 'adish@akashuniversalsolutions.com',
-    address: '31/3, Channi Himmat, Jammu (J&K), India',
+    address: 'India',
     website: process.env.FRONTEND_URL || 'http://localhost:5173',
   },
 };

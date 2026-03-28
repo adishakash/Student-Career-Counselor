@@ -52,7 +52,7 @@ export default function Footer() {
               </a>
               <div className="flex items-start gap-2 text-slate-400">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                31/3, Channi Himmat, Jammu (J&K), India
+                India
               </div>
             </div>
           </div>

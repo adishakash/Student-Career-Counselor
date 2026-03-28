@@ -24,7 +24,7 @@ export default function HeroSection() {
         {/* Trust badge */}
         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          Trusted by students across Jammu & India
+          Trusted by students across India
         </div>
 
         {/* Headline */}

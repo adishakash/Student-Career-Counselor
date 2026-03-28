@@ -4,7 +4,7 @@ import { Star } from 'lucide-react';
 const testimonials = [
   {
     name: 'Priya Sharma',
-    class: 'Class 12 Science, Jammu',
+    class: 'Class 12 Science, Delhi',
     avatar: 'PS',
     rating: 5,
     text: 'I was completely confused between Engineering and Medicine. The premium report helped me realize I\'m better suited for Biomedical Engineering — something I had never even considered! The analysis was incredibly detailed.',
@@ -12,7 +12,7 @@ const testimonials = [
   },
   {
     name: 'Rohit Gupta',
-    class: 'Class 11 Commerce, Jammu',
+    class: 'Class 11 Commerce, Mumbai',
     avatar: 'RG',
     rating: 5,
     text: 'My parents wanted me to become a CA, but the report showed my strengths lie in entrepreneurship and marketing. It gave me the courage to have an honest conversation with my family. Best ₹499 I ever spent!',
@@ -28,7 +28,7 @@ const testimonials = [
   },
   {
     name: 'Vikram Mahajan',
-    class: 'Class 12 Arts, Srinagar',
+    class: 'Class 12 Arts, Pune',
     avatar: 'VM',
     rating: 5,
     text: 'I was embarrassed about being an Arts student until this report showed me the amazing careers possible — journalism, civil services, psychology, law. It completely changed my perspective. Thank you!',
@@ -54,7 +54,7 @@ export default function Testimonials() {
           <p className="text-primary-700 font-semibold text-sm uppercase tracking-wider mb-3">Student Stories</p>
           <h2 className="section-title mb-4">Real Students, Real Results</h2>
           <p className="section-subtitle max-w-xl mx-auto">
-            See what students across Jammu & Kashmir say about their career counseling experience.
+            See what students across India say about their career counseling experience.
           </p>
         </div>
 
