@@ -84,3 +84,4 @@ static_sites:
       - key: VITE_RAZORPAY_KEY_ID
         scope: RUN_TIME
     catchall_document: index.html
+
