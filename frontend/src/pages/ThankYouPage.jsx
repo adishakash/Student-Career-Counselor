@@ -90,8 +90,8 @@ export default function ThankYouPage() {
       {/* Footer note */}
       <p className="mt-8 text-slate-400 text-xs text-center">
         Questions? Email us at{' '}
-        <a href="mailto:adish@akashuniversalsolutions.com" className="text-primary-600 underline">
-          adish@akashuniversalsolutions.com
+        <a href="mailto:contact@cadgurukul.com" className="text-primary-600 underline">
+          contact@cadgurukul.com
         </a>
       </p>
     </div>

@@ -82,7 +82,7 @@ export default function UpgradePage() {
       amount: orderData.amount,
       currency: orderData.currency,
       order_id: orderData.orderId,
-      name: 'Akash Universal Solutions',
+      name: 'CAD Gurukul',
       description: 'Career Counseling — Upgrade to Premium Report',
       prefill: {
         name: studentInfo.studentName,

@@ -46,7 +46,7 @@ export default function PaymentFailurePage() {
         <div className="mt-6 pt-6 border-t border-slate-100 text-sm text-slate-500">
           Need help?{' '}
           <a
-            href="mailto:adish@akashuniversalsolutions.com"
+            href="mailto:contact@cadgurukul.com"
             className="text-primary-700 underline font-medium inline-flex items-center gap-1"
           >
             <Mail className="w-3.5 h-3.5" />

@@ -12,8 +12,8 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-bold text-primary-800 text-lg">
           <GraduationCap className="w-7 h-7 text-amber-500" />
-          <span className="hidden sm:inline">Akash Universal</span>
-          <span className="sm:hidden">AUS</span>
+          <span className="hidden sm:inline">CAD Gurukul</span>
+          <span className="sm:hidden">CG</span>
         </Link>
 
         {/* Desktop nav */}

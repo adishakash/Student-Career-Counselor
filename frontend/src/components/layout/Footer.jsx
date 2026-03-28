@@ -32,7 +32,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 text-white font-bold text-lg mb-4">
               <GraduationCap className="w-7 h-7 text-amber-400" />
-              Akash Universal Solutions
+              CAD Gurukul
             </div>
             <p className="text-slate-400 text-sm leading-relaxed">
               Helping students in India discover their true career potential through intelligent assessments, expert counseling, and personalised guidance.
@@ -44,11 +44,11 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 text-base">Contact Us</h4>
             <div className="space-y-3 text-sm">
               <a
-                href="mailto:adish@akashuniversalsolutions.com"
+                href="mailto:contact@cadgurukul.com"
                 className="flex items-start gap-2 text-slate-400 hover:text-amber-400 transition-colors"
               >
                 <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                adish@akashuniversalsolutions.com
+                adish@cadgurukul.com
               </a>
               <div className="flex items-start gap-2 text-slate-400">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -93,9 +93,9 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-800 mt-10 pt-6 text-center text-slate-500 text-sm">
-          &copy; {new Date().getFullYear()} Akash Universal Solutions. All rights reserved.
+          &copy; {new Date().getFullYear()} CAD Gurukul. All rights reserved.
           &nbsp;|&nbsp;
-          <a href="mailto:adish@akashuniversalsolutions.com" className="hover:text-amber-400 transition-colors">
+          <a href="mailto:contact@cadgurukul.com" className="hover:text-amber-400 transition-colors">
             Contact Support
           </a>
         </div>

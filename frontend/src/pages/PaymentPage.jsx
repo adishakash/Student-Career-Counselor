@@ -60,7 +60,7 @@ export default function PaymentPage() {
       amount: orderData.amount,
       currency: orderData.currency,
       order_id: orderData.orderId,
-      name: 'Akash Universal Solutions',
+      name: 'CAD Gurukul',
       description: 'Student Career Counseling — Premium Report',
       image: '/favicon.svg',
       prefill: {

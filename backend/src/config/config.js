@@ -83,8 +83,8 @@ const config = {
   },
 
   company: {
-    name: 'Akash Universal Solutions',
-    email: 'adish@akashuniversalsolutions.com',
+    name: 'CAD Gurukul',
+    email: 'contact@cadgurukul.com',
     address: 'India',
     website: process.env.FRONTEND_URL || 'http://localhost:5173',
   },

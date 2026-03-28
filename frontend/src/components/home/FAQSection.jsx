@@ -36,7 +36,7 @@ const faqs = [
   },
   {
     q: 'What if I\'m still confused after reading the report?',
-    a: 'The report is designed to be a starting point for deeper exploration. For personalised 1-on-1 counseling, please reach out to us at adish@akashuniversalsolutions.com and we will be happy to schedule a session.',
+    a: 'The report is designed to be a starting point for deeper exploration. For personalised 1-on-1 counseling, please reach out to us at contact@cadgurukul.com and we will be happy to schedule a session.',
   },
 ];
 
