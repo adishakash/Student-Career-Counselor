@@ -21,7 +21,7 @@ services:
       - key: PORT
         value: "8080"
       - key: FRONTEND_URL
-        value: ${APP_URL}
+        value: "https://www.cadgurukul.com,${APP_URL}"
       # Database — fill in after creating a Managed PostgreSQL DB or link via DO DB
       - key: DB_HOST
         scope: RUN_TIME
@@ -56,9 +56,9 @@ services:
       - key: SMTP_PASSWORD
         scope: RUN_TIME
       - key: EMAIL_FROM_NAME
-        value: "Akash Universal Solutions"
+        value: "CAD Gurukul"
       - key: EMAIL_FROM_ADDRESS
-        value: "adish@akashuniversalsolutions.com"
+        value: "contact@cadgurukul.com"
       - key: LLM_PROVIDER
         value: "static"
       - key: OPENAI_API_KEY
@@ -69,6 +69,8 @@ services:
         scope: RUN_TIME
       - key: PDF_STORAGE_PATH
         value: "./storage/pdfs"
+      - key: PDF_BASE_URL
+        value: "https://www.cadgurukul.com/pdfs"
 
 static_sites:
   - name: frontend
