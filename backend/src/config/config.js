@@ -1,12 +1,18 @@
 'use strict';
 require('dotenv').config();
 
-const config = {
-  env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT, 10) || 5000,
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
-
-  db: {
+// Build db config — prefer DATABASE_URL (DigitalOcean managed DB) over individual vars
+function buildDbConfig() {
+  if (process.env.DATABASE_URL) {
+    return {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    };
+  }
+  return {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 5432,
     database: process.env.DB_NAME || 'student_career_counselor',
@@ -16,7 +22,22 @@ const config = {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-  },
+  };
+}
+
+// Support comma-separated FRONTEND_URL for multiple allowed origins
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',')
+  .map((u) => u.trim())
+  .filter(Boolean);
+
+const config = {
+  env: process.env.NODE_ENV || 'development',
+  port: parseInt(process.env.PORT, 10) || 5000,
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  allowedOrigins,
+
+  db: buildDbConfig(),
 
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_jwt_secret_change_in_production',
