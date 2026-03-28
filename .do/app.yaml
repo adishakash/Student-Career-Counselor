@@ -1,5 +1,12 @@
 name: student-career-counselor
 
+databases:
+  - name: db
+    engine: PG
+    version: "16"
+    size: basic
+    num_nodes: 1
+
 services:
   - name: backend
     source_dir: backend
@@ -22,20 +29,9 @@ services:
         value: "8080"
       - key: FRONTEND_URL
         value: "https://www.cadgurukul.com,${APP_URL}"
-      # Database — fill in after creating a Managed PostgreSQL DB or link via DO DB
-      - key: DB_HOST
-        scope: RUN_TIME
-      - key: DB_PORT
-        value: "25060"
-        scope: RUN_TIME
-      - key: DB_NAME
-        scope: RUN_TIME
-      - key: DB_USER
-        scope: RUN_TIME
-      - key: DB_PASSWORD
-        scope: RUN_TIME
-      - key: DB_SSL
-        value: "true"
+      # Database — linked managed PostgreSQL, DATABASE_URL injected automatically
+      - key: DATABASE_URL
+        value: ${db.DATABASE_URL}
       # Secrets — set these in the DO dashboard / deploy wizard
       - key: JWT_SECRET
         scope: RUN_TIME
