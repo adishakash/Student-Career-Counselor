@@ -17,6 +17,6 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ['monkfish-app-ae476.ondigitalocean.app'],
+    allowedHosts: ['monkfish-app-ae476.ondigitalocean.app', 'www.cadgurukul.com'],
   },
 });
