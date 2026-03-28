@@ -1,13 +1,9 @@
 import React from 'react';
 
-export default function Input({
-  label,
-  error,
-  helper,
-  className = '',
-  required = false,
-  ...props
-}) {
+const Input = React.forwardRef(function Input(
+  { label, error, helper, className = '', required = false, ...props },
+  ref
+) {
   return (
     <div className="w-full">
       {label && (
@@ -17,6 +13,7 @@ export default function Input({
         </label>
       )}
       <input
+        ref={ref}
         className={`input-field ${error ? 'border-red-400 focus:ring-red-400 focus:border-red-400' : ''} ${className}`}
         {...props}
       />
@@ -24,4 +21,6 @@ export default function Input({
       {helper && !error && <p className="mt-1.5 text-sm text-slate-500">{helper}</p>}
     </div>
   );
-}
+});
+
+export default Input;
