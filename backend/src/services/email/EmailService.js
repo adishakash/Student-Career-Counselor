@@ -15,8 +15,12 @@ function getTransporter() {
     port: config.smtp.port,
     secure: config.smtp.secure,
     auth: {
+      type: 'LOGIN',
       user: config.smtp.user,
       pass: config.smtp.password,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
     pool: true,
     maxConnections: 5,
