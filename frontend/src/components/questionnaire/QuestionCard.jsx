@@ -11,8 +11,10 @@ export default function QuestionCard({ question, onAnswer, isLast, isSubmitting,
   const [multiSelected, setMultiSelected] = useState([]); // for multi_choice
   const [textValue, setTextValue] = useState('');
 
+  const MIN_TEXT_LENGTH = 3;
+
   const canProceed = () => {
-    if (question.question_type === 'text') return textValue.trim().length > 0;
+    if (question.question_type === 'text') return textValue.trim().length >= MIN_TEXT_LENGTH;
     if (question.question_type === 'multi_choice') return multiSelected.length > 0;
     return selected !== null;
   };
@@ -120,14 +122,29 @@ export default function QuestionCard({ question, onAnswer, isLast, isSubmitting,
       )}
 
       {question.question_type === 'text' && (
-        <textarea
-          value={textValue}
-          onChange={(e) => setTextValue(e.target.value)}
-          placeholder="Type your answer here..."
-          rows={4}
-          className="input-field resize-none"
-          maxLength={1000}
-        />
+        <div className="relative">
+          <textarea
+            value={textValue}
+            onChange={(e) => setTextValue(e.target.value)}
+            placeholder="Type your answer here..."
+            rows={4}
+            className={`input-field resize-none pb-6 ${
+              textValue.length > 900 ? 'border-amber-400 focus:ring-amber-400' : ''
+            }`}
+            maxLength={1000}
+          />
+          <span
+            className={`absolute bottom-2 right-3 text-xs pointer-events-none ${
+              textValue.length > 900 ? 'text-amber-500 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            {textValue.length}/1000
+          </span>
+        </div>
+      )}
+
+      {question.question_type === 'text' && textValue.length > 0 && textValue.trim().length < MIN_TEXT_LENGTH && (
+        <p className="text-xs text-slate-400 mt-1">Please write at least a few words</p>
       )}
 
       {/* Next button */}
