@@ -195,14 +195,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_updated_at_students ON students;
 CREATE TRIGGER set_updated_at_students
   BEFORE UPDATE ON students
   FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at_assessments ON assessments;
 CREATE TRIGGER set_updated_at_assessments
   BEFORE UPDATE ON assessments
   FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
+DROP TRIGGER IF EXISTS set_updated_at_payments ON payments;
 CREATE TRIGGER set_updated_at_payments
   BEFORE UPDATE ON payments
   FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
