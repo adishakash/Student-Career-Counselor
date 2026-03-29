@@ -39,7 +39,7 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'https://www.cadgurukul.com'
 
 const config = {
   env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT, 10) || 5000,
+  port: parseInt(process.env.PORT, 10) || 8080,
   frontendUrl: process.env.FRONTEND_URL || 'https://www.cadgurukul.com',
   allowedOrigins,
 
