@@ -105,15 +105,22 @@ export default function UpgradePage() {
             razorpaySignature: response.razorpay_signature,
             assessmentId: studentInfo.assessmentId,
           });
-          // Payment verified — generate paid report using cached answers (no re-questionnaire)
-          setStatus('generating');
-          await generateReport(studentInfo.assessmentId);
-          dispatch({ type: 'PAYMENT_SUCCESS' });
-          navigate('/thank-you', { state: { planType: 'paid' } });
         } catch (err) {
           setError(err.message || 'Payment verification failed. Please contact support.');
           setStatus('error');
+          return;
         }
+
+        // Payment verified — fire report generation without blocking navigation.
+        // The backend will generate the PDF and email it asynchronously even after
+        // the browser navigates away (Node.js continues processing disconnected requests).
+        generateReport(studentInfo.assessmentId).catch(() => {
+          // Silently ignored on the client — the backend logs any errors.
+          // User can resend the report via the "Resend" link on the Thank You page.
+        });
+
+        dispatch({ type: 'PAYMENT_SUCCESS' });
+        navigate('/thank-you', { state: { planType: 'paid' } });
       },
       modal: {
         ondismiss: async () => {
