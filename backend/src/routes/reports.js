@@ -44,13 +44,14 @@ router.post('/generate', async (req, res, next) => {
       throw new AppError('Payment not verified for this assessment', 402);
     }
 
-    // Idempotency: check if report already generated
+    // Idempotency: check if a report of the same type was already generated
     const existingReport = await db.query(
-      'SELECT id, pdf_path, pdf_filename FROM reports WHERE assessment_id = $1',
-      [assessmentId]
+      'SELECT id, pdf_path, pdf_filename FROM reports WHERE assessment_id = $1 AND report_type = $2',
+      [assessmentId, assessment.plan_type]
     );
 
     let reportId, pdfPath, pdfFilename;
+    let upgradeToken = null;
 
     if (existingReport.rows.length > 0) {
       // Report already exists — resend email
@@ -58,6 +59,11 @@ router.post('/generate', async (req, res, next) => {
       pdfPath = existingReport.rows[0].pdf_path;
       pdfFilename = existingReport.rows[0].pdf_filename;
       logger.info('Report already exists, resending email', { assessmentId });
+
+      // For free reports: generate a fresh upgrade token to return to the caller
+      if (assessment.plan_type === 'free') {
+        upgradeToken = await TokenService.createUpgradeToken(assessment.student_id, assessmentId);
+      }
     } else {
       // Fetch questions + answers
       const qnaResult = await db.query(
@@ -104,7 +110,6 @@ router.post('/generate', async (req, res, next) => {
       );
 
       // Generate upgrade token if free report
-      let upgradeToken = null;
       if (assessment.plan_type === 'free') {
         upgradeToken = await TokenService.createUpgradeToken(
           assessment.student_id,
@@ -153,7 +158,7 @@ router.post('/generate', async (req, res, next) => {
     res.json({
       success: true,
       message: 'Report generated and sent to your email',
-      data: { reportId, assessmentId },
+      data: { reportId, assessmentId, upgradeToken: upgradeToken || undefined },
     });
   } catch (err) {
     next(err);

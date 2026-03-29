@@ -76,7 +76,14 @@ export default function ThankYouPage() {
           </Button>
           {planType === 'free' && (
             <Button
-              onClick={() => navigate('/questionnaire', { state: { planType: 'paid' } })}
+              onClick={() => {
+                if (state.upgradeToken) {
+                  navigate(`/upgrade?token=${state.upgradeToken}`);
+                } else {
+                  // Token not in context (e.g. after page refresh) — instruct user to use email link
+                  navigate('/upgrade');
+                }
+              }}
               variant="secondary"
               fullWidth
             >

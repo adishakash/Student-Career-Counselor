@@ -92,7 +92,10 @@ export default function QuestionnairePage() {
     setError('');
     try {
       await submitAnswers({ assessmentId: state.assessmentId, answers: updatedAnswers });
-      await generateReport(state.assessmentId);
+      const reportData = await generateReport(state.assessmentId);
+      if (reportData?.data?.upgradeToken) {
+        dispatch({ type: 'SET_UPGRADE_TOKEN', payload: reportData.data.upgradeToken });
+      }
       dispatch({ type: 'QUESTIONNAIRE_COMPLETE' });
       navigate('/thank-you', { state: { planType } });
     } catch (err) {

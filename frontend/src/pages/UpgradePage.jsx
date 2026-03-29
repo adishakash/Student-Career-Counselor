@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Star, Lock, AlertCircle, Shield, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getUpgradeInfo, createPaymentOrder, verifyPayment, recordPaymentFailure } from '../services/api';
+import { getUpgradeInfo, createPaymentOrder, verifyPayment, recordPaymentFailure, generateReport } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Button from '../components/ui/Button';
 
@@ -25,7 +25,7 @@ export default function UpgradePage() {
 
   const token = searchParams.get('token');
 
-  const [status, setStatus] = useState('validating'); // validating | ready | processing | error | invalid
+  const [status, setStatus] = useState('validating'); // validating | ready | processing | generating | error | invalid | timeout
   const [studentInfo, setStudentInfo] = useState(null);
   const [orderData, setOrderData] = useState(null);
   const [error, setError] = useState('');
@@ -68,8 +68,13 @@ export default function UpgradePage() {
 
       setStatus('ready');
     } catch (err) {
-      setStatus('invalid');
-      setError(err.message || 'This upgrade link is invalid or has expired.');
+      if (err.status === 504 || err.status === 503 || err.status === 502) {
+        setStatus('timeout');
+        setError('The server is temporarily unavailable. Please wait a moment and try again.');
+      } else {
+        setStatus('invalid');
+        setError(err.message || 'This upgrade link is invalid or has expired.');
+      }
     }
   };
 
@@ -97,10 +102,13 @@ export default function UpgradePage() {
             razorpaySignature: response.razorpay_signature,
             assessmentId: studentInfo.assessmentId,
           });
+          // Payment verified — generate paid report using cached answers (no re-questionnaire)
+          setStatus('generating');
+          await generateReport(studentInfo.assessmentId);
           dispatch({ type: 'PAYMENT_SUCCESS' });
-          navigate('/questionnaire', { state: { planType: 'paid' } });
+          navigate('/thank-you', { state: { planType: 'paid' } });
         } catch (err) {
-          setError('Payment verification failed. Please contact support.');
+          setError(err.message || 'Payment verification failed. Please contact support.');
           setStatus('error');
         }
       },
@@ -122,11 +130,11 @@ export default function UpgradePage() {
   }, [orderData, studentInfo, dispatch, navigate]);
 
   const PAID_HIGHLIGHTS = [
-    '20-question personalized deep-dive assessment',
     '6+ career paths with fit scores & detailed pathways',
     'Full personality & interest pattern analysis',
     'Detailed academic roadmap with entrance exam guide',
     'Step-by-step personalised action plan',
+    'Premium branded PDF report — delivered to your email',
   ];
 
   return (
@@ -148,12 +156,37 @@ export default function UpgradePage() {
             </div>
           )}
 
+          {status === 'generating' && (
+            <div className="flex flex-col items-center py-10 gap-4">
+              <LoadingSpinner size="lg" />
+              <p className="text-slate-600 font-medium">Generating your Premium Report...</p>
+              <p className="text-slate-400 text-xs text-center">Our AI is crafting your personalised career analysis. This may take up to a minute.</p>
+            </div>
+          )}
+
           {status === 'invalid' && (
             <div className="text-center py-6">
               <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-slate-800 mb-2">Invalid Upgrade Link</h2>
               <p className="text-slate-500 text-sm mb-6">{error}</p>
               <Button onClick={() => navigate('/')} variant="outline">Go to Home</Button>
+            </div>
+          )}
+
+          {status === 'timeout' && (
+            <div className="text-center py-6">
+              <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-800 mb-2">Server Unavailable</h2>
+              <p className="text-slate-500 text-sm mb-6">{error}</p>
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => { setStatus('validating'); setError(''); validateToken(); }}
+                  variant="primary"
+                >
+                  Try Again
+                </Button>
+                <Button onClick={() => navigate('/')} variant="outline">Go to Home</Button>
+              </div>
             </div>
           )}
 

@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, GraduationCap } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { dispatch } = useApp();
+
+  const handleStartFree = () => {
+    dispatch({ type: 'SET_PLAN_TYPE', payload: 'free' });
+    navigate('/questionnaire', { state: { planType: 'free' } });
+  };
 
   return (
     <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-primary-800 text-lg">
+        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 font-bold text-primary-800 text-lg">
           <GraduationCap className="w-7 h-7 text-amber-500" />
           <span className="hidden sm:inline">CAD Gurukul</span>
           <span className="sm:hidden">CG</span>
@@ -27,7 +34,7 @@ export default function Navbar() {
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           <button
-            onClick={() => navigate('/#pricing')}
+            onClick={handleStartFree}
             className="btn-primary text-sm px-5 py-2"
           >
             Start Free
@@ -52,7 +59,7 @@ export default function Navbar() {
           <a href="#testimonials" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">Student Stories</a>
           <a href="#faq" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">FAQ</a>
           <button
-            onClick={() => { setMenuOpen(false); navigate('/#pricing'); }}
+            onClick={() => { setMenuOpen(false); handleStartFree(); }}
             className="btn-primary text-sm py-2 mt-2"
           >
             Start Your Assessment

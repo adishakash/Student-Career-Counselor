@@ -73,15 +73,25 @@ class AnthropicProvider extends LLMProvider {
         .map((row, i) => `Q${i + 1}: ${row.question_text}\nAnswer: ${row.answer_text || row.answer_value || 'N/A'}`)
         .join('\n\n');
 
-      const prompt = `You are a career counselor. Respond with valid JSON only.
+      const prompt = isPaid
+        ? `You are a senior career counselor in India. Respond with valid JSON only.
 
-Analyse this student's assessment and generate a career counseling report.
+Analyse this student's assessment and generate a comprehensive premium career counseling report.
 Student: ${studentProfile.name}, Age ${studentProfile.age}, Class ${studentProfile.standard}.
 
 Q&A:
 ${qnaText}
 
-Return JSON: {studentName, standard, age, reportType, summary, strengths[], careerSuggestions[{title,fit,description,pathway}], academicPathways[], nextSteps[], motivation}`;
+Return JSON: {studentName, standard, age, reportType:"paid", summary, personalityInsights, interestPattern, strengths[4+], careerSuggestions[6+:{title,fit:"High|Medium|Good",description,pathway}], academicPathways[5+], nextSteps[5+], motivation}
+Include deep personality insights, detailed pathways with entrance exams and degree routes, and a personalised motivational message.`
+        : `You are a career counselor. Respond with valid JSON only.
+
+Generate a brief introductory career overview for: ${studentProfile.name}, Age ${studentProfile.age}, Class ${studentProfile.standard}.
+
+Q&A:
+${qnaText}
+
+Return JSON: {studentName, standard, age, reportType:"free", summary, strengths[3], careerSuggestions[3:{title,fit:"High",description,pathway}], nextSteps[3], motivation}`;
 
       const { data, durationMs } = await this._callAPI(prompt, isPaid ? 4000 : 2000);
       const reportContent = JSON.parse(data.content[0].text);

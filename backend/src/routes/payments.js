@@ -87,6 +87,14 @@ router.post(
         throw new AppError('Payment verification failed. Invalid signature.', 400);
       }
 
+      // Determine if this is an upgrade (free→paid) or a new paid assessment
+      const assessmentCheck = await db.query(
+        'SELECT plan_type FROM assessments WHERE id = $1',
+        [assessmentId]
+      );
+      if (!assessmentCheck.rows.length) throw new AppError('Assessment not found', 404);
+      const isUpgrade = assessmentCheck.rows[0].plan_type === 'free';
+
       // Update payment and assessment in a transaction
       await db.withTransaction(async (client) => {
         await client.query(
@@ -99,19 +107,32 @@ router.post(
           [razorpayPaymentId, razorpaySignature, razorpayOrderId]
         );
 
-        await client.query(
-          `UPDATE assessments
-           SET payment_status = 'paid',
-               status = 'in_progress',
-               updated_at = NOW()
-           WHERE id = $1`,
-          [assessmentId]
-        );
+        if (isUpgrade) {
+          // Upgrade path: answers already exist — flip plan to paid, keep status completed
+          await client.query(
+            `UPDATE assessments
+             SET plan_type = 'paid',
+                 payment_status = 'paid',
+                 updated_at = NOW()
+             WHERE id = $1`,
+            [assessmentId]
+          );
+        } else {
+          // New paid assessment: ready to start questionnaire
+          await client.query(
+            `UPDATE assessments
+             SET payment_status = 'paid',
+                 status = 'in_progress',
+                 updated_at = NOW()
+             WHERE id = $1`,
+            [assessmentId]
+          );
+        }
       });
 
-      logger.info('Payment verified successfully', { razorpayOrderId, assessmentId });
+      logger.info('Payment verified successfully', { razorpayOrderId, assessmentId, isUpgrade });
 
-      res.json({ success: true, message: 'Payment verified successfully', data: { assessmentId } });
+      res.json({ success: true, message: 'Payment verified successfully', data: { assessmentId, isUpgrade } });
     } catch (err) {
       next(err);
     }

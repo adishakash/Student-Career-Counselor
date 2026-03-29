@@ -6,6 +6,7 @@ const initialState = {
   assessmentId: null,
   planType: null,        // 'free' | 'paid'
   currentStep: 'intake', // 'intake' | 'payment' | 'questionnaire' | 'done'
+  upgradeToken: null,    // token for free→paid upgrade link
 };
 
 function appReducer(state, action) {
@@ -21,6 +22,8 @@ function appReducer(state, action) {
       };
     case 'SET_PLAN_TYPE':
       return { ...state, planType: action.payload };
+    case 'SET_UPGRADE_TOKEN':
+      return { ...state, upgradeToken: action.payload };
     case 'PAYMENT_SUCCESS':
       return { ...state, currentStep: 'questionnaire' };
     case 'QUESTIONNAIRE_COMPLETE':
