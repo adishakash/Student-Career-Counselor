@@ -19,7 +19,12 @@ export default function QuestionnairePage() {
 
   const planType = location.state?.planType || state.planType || 'free';
 
-  const [step, setStep] = useState(STEPS.INTAKE);
+  // When returning from payment, skip the intake form and show the loader immediately
+  const [step, setStep] = useState(
+    state.currentStep === 'questionnaire' && state.assessmentId
+      ? STEPS.LOADING_QUESTIONS
+      : STEPS.INTAKE
+  );
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -38,7 +43,11 @@ export default function QuestionnairePage() {
     setError('');
     try {
       const data = await getQuestions(assessmentId);
-      setQuestions(data.data.questions);
+      const qs = data?.data?.questions;
+      if (!qs || qs.length === 0) {
+        throw new Error('No questions were returned. Please refresh and try again.');
+      }
+      setQuestions(qs);
       setStep(STEPS.QUESTIONS);
     } catch (err) {
       setError(err.message);

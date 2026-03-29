@@ -21,17 +21,21 @@ Generate ${student.planType === 'paid' ? 20 : 10} career assessment questions co
 4. Skills and strengths
 5. Goals and aspirations
 
-For each question, return a JSON array of objects with this exact structure:
+Return a JSON object with a "questions" key containing an array of question objects. Each question object must have this exact structure:
 {
-  "orderIndex": <number starting from 1>,
-  "category": "<academics|interests|personality|skills|goals>",
-  "questionType": "<single_choice|multi_choice|scale|text>",
-  "questionText": "<the question>",
-  "options": [{"value": "<short_key>", "label": "<display text>"}] or null for text type
+  "questions": [
+    {
+      "orderIndex": <number starting from 1>,
+      "category": "<academics|interests|personality|skills|goals>",
+      "questionType": "<single_choice|multi_choice|scale|text>",
+      "questionText": "<the question>",
+      "options": [{"value": "<short_key>", "label": "<display text>"}] or null for text type
+    }
+  ]
 }
 
 Make questions friendly, clear, and appropriate for a ${student.age}-year-old student in India.
-Return ONLY the JSON array, no other text.
+Return ONLY the JSON object with the "questions" key, no other text.
 `;
 
 function decodeAnswer(row) {
@@ -129,7 +133,11 @@ class OpenAIProvider extends LLMProvider {
       ]);
 
       const raw = JSON.parse(data.choices[0].message.content);
-      const questions = Array.isArray(raw) ? raw : raw.questions || [];
+      const questions = Array.isArray(raw) ? raw : raw.questions || raw.data || raw.items || [];
+
+      if (questions.length === 0) {
+        throw new Error('OpenAI returned an empty questions array');
+      }
 
       return {
         questions: questions.map((q) => ({
