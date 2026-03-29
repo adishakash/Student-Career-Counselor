@@ -26,11 +26,6 @@ export default function LanguageSwitcher({ className = '' }) {
         ${className}
       `}
     >
-      {/* Flag emoji */}
-      <span className="text-base leading-none" aria-hidden="true">
-        {isHindi ? '🇮🇳' : '🇮🇳'}
-      </span>
-
       {/* Toggle pill */}
       <span className="flex items-center gap-1">
         <span
@@ -47,7 +42,7 @@ export default function LanguageSwitcher({ className = '' }) {
       </span>
 
       {/* Active label */}
-      <span className="hidden sm:inline text-xs font-semibold bg-amber-400 text-white rounded-full px-2 py-0.5 ml-0.5 group-hover:bg-amber-500 transition-colors">
+      <span className="text-xs font-semibold bg-amber-400 text-white rounded-full px-2 py-0.5 ml-0.5 group-hover:bg-amber-500 transition-colors">
         {t.switchLabel}
       </span>
     </button>

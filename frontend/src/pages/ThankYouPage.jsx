@@ -101,7 +101,7 @@ export default function ThankYouPage() {
   );
 }
 
-export default function ThankYouPage() {
+export function DuplicateThankYouPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { state, dispatch } = useApp();

@@ -169,15 +169,10 @@ export default function QuestionnairePage() {
   );
 }
 
-const STEPS = { INTAKE: 'intake', LOADING_QUESTIONS: 'loading_questions', QUESTIONS: 'questions', SUBMITTING: 'submitting' };
-
-export default function QuestionnairePage() {
+export function DuplicateQuestionnairePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { state, dispatch } = useApp();
-
-  // planType can come from router state (from home page) or from context
-  const planType = location.state?.planType || state.planType || 'free';
 
   const [step, setStep] = useState(STEPS.INTAKE);
   const [questions, setQuestions] = useState([]);
