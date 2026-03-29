@@ -70,28 +70,39 @@ class AnthropicProvider extends LLMProvider {
     try {
       const isPaid = studentProfile.planType === 'paid';
       const qnaText = qna
-        .map((row, i) => `Q${i + 1}: ${row.question_text}\nAnswer: ${row.answer_text || row.answer_value || 'N/A'}`)
+        .map((row, i) => {
+          let ans = row.answer_text;
+          if (!ans && row.answer_value) {
+            try {
+              const parsed = typeof row.answer_value === 'string' ? JSON.parse(row.answer_value) : row.answer_value;
+              ans = Array.isArray(parsed) ? parsed.join(', ') : String(parsed);
+            } catch { ans = String(row.answer_value); }
+          }
+          return `Q${i + 1} [${row.category}]: ${row.question_text}\nAnswer: ${ans || 'Not answered'}`;
+        })
         .join('\n\n');
 
       const prompt = isPaid
         ? `You are a senior career counselor in India. Respond with valid JSON only.
 
-Analyse this student's assessment and generate a comprehensive premium career counseling report.
+Generate a DEEPLY PERSONALISED premium career report based STRICTLY on this student's actual answers. Do NOT give generic advice — every sentence must reference what the student specifically said.
 Student: ${studentProfile.name}, Age ${studentProfile.age}, Class ${studentProfile.standard}.
 
 Q&A:
 ${qnaText}
 
 Return JSON: {studentName, standard, age, reportType:"paid", summary, personalityInsights, interestPattern, strengths[4+], careerSuggestions[6+:{title,fit:"High|Medium|Good",description,pathway}], academicPathways[5+], nextSteps[5+], motivation}
-Include deep personality insights, detailed pathways with entrance exams and degree routes, and a personalised motivational message.`
+CRITICAL: Report must be unique to this student. Include detailed pathways with entrance exams and degree routes. Address student by name in motivation.`
         : `You are a career counselor. Respond with valid JSON only.
 
-Generate a brief introductory career overview for: ${studentProfile.name}, Age ${studentProfile.age}, Class ${studentProfile.standard}.
+Generate a PERSONALISED introductory career overview based STRICTLY on this student's actual answers.
+Student: ${studentProfile.name}, Age ${studentProfile.age}, Class ${studentProfile.standard}.
 
 Q&A:
 ${qnaText}
 
-Return JSON: {studentName, standard, age, reportType:"free", summary, strengths[3], careerSuggestions[3:{title,fit:"High",description,pathway}], nextSteps[3], motivation}`;
+Return JSON: {studentName, standard, age, reportType:"free", summary, strengths[3], careerSuggestions[3:{title,fit:"High",description,pathway}], nextSteps[3], motivation}
+CRITICAL: Every suggestion must directly match what this specific student expressed. Address student by name in motivation.`;
 
       const { data, durationMs } = await this._callAPI(prompt, isPaid ? 4000 : 2000);
       const reportContent = JSON.parse(data.content[0].text);

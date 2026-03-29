@@ -34,46 +34,58 @@ Make questions friendly, clear, and appropriate for a ${student.age}-year-old st
 Return ONLY the JSON array, no other text.
 `;
 
+function decodeAnswer(row) {
+  const raw = row.answer_value;
+  if (row.answer_text) return row.answer_text;
+  if (!raw) return 'Not answered';
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) return parsed.join(', ');
+    return String(parsed);
+  } catch { return String(raw); }
+}
+
 const REPORT_PROMPT = (student, qna, isPaid) => {
   const qnaText = qna
-    .map((row, i) => `Q${i + 1} [${row.category}]: ${row.question_text}\nAnswer: ${row.answer_text || row.answer_value || 'Not answered'}`)
+    .map((row, i) => `Q${i + 1} [${row.category}]: ${row.question_text}\nAnswer: ${decodeAnswer(row)}`)
     .join('\n\n');
 
   return `
-You are a senior career counselor in India. Analyse this student's assessment and generate a ${isPaid ? 'comprehensive premium' : 'introductory'} career counseling report.
+You are a senior career counselor in India. Your job is to generate a DEEPLY PERSONALISED career report based STRICTLY on this specific student's actual answers below. Do NOT give generic advice. Every sentence must directly reference something the student said.
 
 Student Profile:
 - Name: ${student.name}
 - Age: ${student.age}
 - Class: ${student.standard}
 
-Assessment Q&A:
+Assessment Q&A (use these answers to drive ALL recommendations):
 ${qnaText}
 
-Generate a structured JSON report with this exact format:
+Generate a structured JSON report reflecting ONLY what this specific student expressed:
 {
   "studentName": "${student.name}",
   "standard": "${student.standard}",
   "age": ${student.age},
   "reportType": "${isPaid ? 'paid' : 'free'}",
-  "summary": "<2-3 sentence overall personality and interest summary>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>", "<strength 4>"],
-  "interestPattern": "<description of student's interest pattern>",
-  "personalityInsights": "<key personality observations>",
+  "summary": "<2-3 sentences describing THIS student's unique personality and interests based on their answers>",
+  "strengths": ["<specific strength shown in their answers>", "<another specific strength>", "<third strength>", "<fourth strength>"],
+  "interestPattern": "<what pattern of genuine interests emerges from their answers — be specific>",
+  "personalityInsights": "<personality traits clearly visible in how they answered — be specific>",
   "careerSuggestions": [
     {
-      "title": "<Career Title>",
+      "title": "<Career that directly matches what the student expressed interest in>",
       "fit": "<High|Medium|Good>",
-      "description": "<why this suits the student>",
-      "pathway": "<how to pursue this — entrance exams, degree, skills>"
+      "description": "<why this specifically suits THIS student based on their answers>",
+      "pathway": "<how to pursue this — relevant entrance exams, degree, skills for Indian students>"
     }
   ],
-  "academicPathways": ["<step 1>", "<step 2>", "<step 3>"],
-  "nextSteps": ["<actionable step 1>", "<step 2>", "<step 3>", "<step 4>", "<step 5>"],
-  "motivation": "<a personalised motivational closing message for the student>"
+  "academicPathways": ["<step 1 tailored to their class and stated goals>", "<step 2>", "<step 3>"],
+  "nextSteps": ["<actionable step tied to their specific interests>", "<step 2>", "<step 3>", "<step 4>", "<step 5>"],
+  "motivation": "<a warm, encouraging message addressing ${student.name} directly by name, referencing their specific dreams>"
 }
 
 ${isPaid ? 'For the premium report: include 5-7 career suggestions with detailed pathways, deep personality insights, and comprehensive next steps.' : 'For the basic report: include 3 career suggestions with high-level guidance.'}
+CRITICAL: The report must be unique to this student. Do not produce a template response.
 
 Return ONLY the JSON object, no other text.
 `;
