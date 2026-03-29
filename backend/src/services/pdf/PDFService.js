@@ -67,33 +67,33 @@ const CW = PW - ML * 2;
 function getLabels(language) {
   if (language === 'hi') {
     return {
-      greeting:             (name) => `Wah ${name}! Tumhara Report Ready Hai! 🎉`,
-      careerOverview:       '🌟  Tumhara Career Overview',
-      keyStrengths:         '💪  Tumhari Super Strengths',
-      careerPaths:          '🚀  Best Career Paths for You',
-      nextSteps:            '✅  Agle Steps (Kya Karo Abhi)',
-      executiveSummary:     '🌟  Tumhara Career Overview',
-      personalityStyle:     '🧠  Tumhari Personality Style',
-      interestPattern:      '🔍  Tumhare Interest Patterns',
-      personalisedPaths:    '🚀  Tumhare Liye Career Paths',
-      academicRoadmap:      '📚  Academic Roadmap',
-      actionPlan:           '✅  Action Plan',
+      greeting:             (name) => `Wah ${name}! Tumhara Report Ready Hai!`,
+      careerOverview:       'Tumhara Career Overview',
+      keyStrengths:         'Tumhari Top Strengths',
+      careerPaths:          'Best Career Paths for You',
+      nextSteps:            'Agle Steps (Kya Karo Abhi)',
+      executiveSummary:     'Tumhara Career Overview',
+      personalityStyle:     'Tumhari Personality Style',
+      interestPattern:      'Tumhare Interest Patterns',
+      personalisedPaths:    'Tumhare Liye Career Paths',
+      academicRoadmap:      'Academic Roadmap',
+      actionPlan:           'Action Plan',
       pursuePath:           'Is career ke liye kya karein:',
       contactNudge: (email) => `Personalized guidance ke liye hum se contact karein: ${email}`,
     };
   }
   return {
-    greeting:             (name) => `Awesome, ${name}! Your Report is Ready! 🎉`,
-    careerOverview:       '🌟  Your Career Overview',
-    keyStrengths:         '💪  Your Super Strengths',
-    careerPaths:          '🚀  Best Career Paths For You',
-    nextSteps:            '✅  What To Do Next',
-    executiveSummary:     '🌟  Your Career Overview',
-    personalityStyle:     '🧠  Your Personality Style',
-    interestPattern:      '🔍  Your Interest Patterns',
-    personalisedPaths:    '🚀  Career Paths Built For You',
-    academicRoadmap:      '📚  Your Academic Roadmap',
-    actionPlan:           '✅  Your Action Plan',
+    greeting:             (name) => `Awesome, ${name}! Your Report is Ready!`,
+    careerOverview:       'Your Career Overview',
+    keyStrengths:         'Your Top Strengths',
+    careerPaths:          'Best Career Paths For You',
+    nextSteps:            'What To Do Next',
+    executiveSummary:     'Your Career Overview',
+    personalityStyle:     'Your Personality Style',
+    interestPattern:      'Your Interest Patterns',
+    personalisedPaths:    'Career Paths Built For You',
+    academicRoadmap:      'Your Academic Roadmap',
+    actionPlan:           'Your Action Plan',
     pursuePath:           'How to get there:',
     contactNudge: (email) => `For personalised guidance, reach us at ${email}`,
   };
@@ -142,34 +142,22 @@ const PDFService = {
 
   /** Draw a filled rounded rectangle */
   _roundRect(doc, x, y, w, h, r, fillColor) {
-    const R = parseInt(fillColor.slice(1, 3), 16);
-    const G = parseInt(fillColor.slice(3, 5), 16);
-    const B = parseInt(fillColor.slice(5, 7), 16);
-    doc.roundedRect(x, y, w, h, r).fillColor(R, G, B).fill();
+    doc.roundedRect(x, y, w, h, r).fillColor(fillColor).fill();
   },
 
   /** Draw filled rectangle */
   _rect(doc, x, y, w, h, fillColor) {
-    const R = parseInt(fillColor.slice(1, 3), 16);
-    const G = parseInt(fillColor.slice(3, 5), 16);
-    const B = parseInt(fillColor.slice(5, 7), 16);
-    doc.rect(x, y, w, h).fillColor(R, G, B).fill();
+    doc.rect(x, y, w, h).fillColor(fillColor).fill();
   },
 
   /** Set fill color from hex */
   _fc(doc, h) {
-    const R = parseInt(h.slice(1, 3), 16);
-    const G = parseInt(h.slice(3, 5), 16);
-    const B = parseInt(h.slice(5, 7), 16);
-    doc.fillColor(R, G, B);
+    doc.fillColor(h);
   },
 
   /** Set stroke color from hex */
   _sc(doc, h) {
-    const R = parseInt(h.slice(1, 3), 16);
-    const G = parseInt(h.slice(3, 5), 16);
-    const B = parseInt(h.slice(5, 7), 16);
-    doc.strokeColor(R, G, B);
+    doc.strokeColor(h);
   },
 
   // ── Header ────────────────────────────────────────────────────────────────────
@@ -197,7 +185,7 @@ const PDFService = {
     PDFService._roundRect(doc, -20, hh - 10, PW + 40, 24, 12, C.pageBg);
 
     // ── Badge ─────────────────────────────────────────────────────────────────
-    const badgeText  = isPaid ? '⭐ PREMIUM' : '🆓 FREE REPORT';
+    const badgeText  = isPaid ? 'PREMIUM' : 'FREE REPORT';
     const badgeColor = isPaid ? C.yellow : C.green;
     PDFService._roundRect(doc, PW - ML - 100, 14, 100, 22, 11, badgeColor);
     PDFService._fc(doc, C.dark);
@@ -271,11 +259,7 @@ const PDFService = {
   _drawBullet(doc, text, accentColor) {
     const color = accentColor || C.green;
     const y = doc.y;
-    // Small colored dot
-    const R = parseInt(color.slice(1, 3), 16);
-    const G = parseInt(color.slice(3, 5), 16);
-    const B = parseInt(color.slice(5, 7), 16);
-    doc.circle(ML + 6, y + 7, 4).fillColor(R, G, B).fill();
+    doc.circle(ML + 6, y + 7, 4).fillColor(color).fill();
 
     PDFService._fc(doc, C.bodyText);
     doc.fontSize(10.5).font('Helvetica')
@@ -382,11 +366,8 @@ const PDFService = {
     doc.y = curY + 12;
     doc.x = ML;
     // Thin rule between cards
-    const R = parseInt(C.rule.slice(1, 3), 16);
-    const G = parseInt(C.rule.slice(3, 5), 16);
-    const B = parseInt(C.rule.slice(5, 7), 16);
     doc.moveTo(ML, doc.y - 6).lineTo(PW - ML, doc.y - 6)
-      .strokeColor(R, G, B).lineWidth(0.4).stroke();
+      .strokeColor(C.rule).lineWidth(0.4).stroke();
   },
 
   // ── Upgrade CTA box ──────────────────────────────────────────────────────────
@@ -410,7 +391,7 @@ const PDFService = {
     PDFService._fc(doc, C.dark);
     doc.fontSize(14).font('Helvetica-Bold')
       .text(
-        isHindi ? '⭐ Full Report Unlock Karo — Sirf ₹499!' : '⭐ Unlock Your Full Report — Just ₹499!',
+        isHindi ? 'Unlock Full Report - Sirf Rs.499!' : 'Unlock Your Full Report - Just Rs.499!',
         ML + 14, y + 16, { width: CW - 28 },
       );
 
@@ -426,7 +407,7 @@ const PDFService = {
     PDFService._fc(doc, C.purple);
     doc.fontSize(10).font('Helvetica-Bold')
       .text(
-        isHindi ? `Abhi Upgrade Karo → ${upgradeUrl}` : `Upgrade Now → ${upgradeUrl}`,
+        isHindi ? `Abhi Upgrade Karo -> ${upgradeUrl}` : `Upgrade Now -> ${upgradeUrl}`,
         ML + 14, y + 74, { width: CW - 28, link: upgradeUrl, underline: true },
       );
 
@@ -442,11 +423,9 @@ const PDFService = {
     const h = 76;
     PDFService._roundRect(doc, ML, y, CW, h, 10, C.pinkPale);
     PDFService._roundRect(doc, ML, y, CW, 5, 5, C.pink);
-    PDFService._fc(doc, C.pink);
-    doc.fontSize(26).font('Helvetica-Bold').text('\u2728', ML + 14, y + 10);
     PDFService._fc(doc, C.dark);
     doc.fontSize(10.5).font('Helvetica-Oblique')
-      .text(text, ML + 46, y + 14, { width: CW - 60 });
+      .text(text, ML + 14, y + 14, { width: CW - 28 });
     doc.y = y + h + 14;
     doc.x = ML;
   },
@@ -487,7 +466,7 @@ const PDFService = {
     PDFService._roundRect(doc, PW - ML - 116, 14, 116, 24, 12, CF.yellow);
     PDFService._fc(doc, CF.greenDark);
     doc.fontSize(9).font('Helvetica-Bold')
-      .text('\u2726 FREE REPORT', PW - ML - 116, 20, { width: 116, align: 'center' });
+      .text('FREE REPORT', PW - ML - 116, 20, { width: 116, align: 'center' });
 
     // Company name — white, bold
     PDFService._fc(doc, CF.white);
@@ -563,10 +542,7 @@ const PDFService = {
       const th = 24;
       if (x + tw > PW - ML + 4 && x !== ML) { x = ML; rowY += th + 8; }
       PDFService._roundRect(doc, x, rowY, tw, th, 12, tagBgs[i % tagBgs.length]);
-      const dR = parseInt(tagFgs[i % tagFgs.length].slice(1, 3), 16);
-      const dG = parseInt(tagFgs[i % tagFgs.length].slice(3, 5), 16);
-      const dB = parseInt(tagFgs[i % tagFgs.length].slice(5, 7), 16);
-      doc.circle(x + 11, rowY + 12, 3).fillColor(dR, dG, dB).fill();
+      doc.circle(x + 11, rowY + 12, 3).fillColor(tagFgs[i % tagFgs.length]).fill();
       PDFService._fc(doc, tagFgs[i % tagFgs.length]);
       doc.fontSize(10).font('Helvetica-Bold')
         .text(s, x + 20, rowY + 7, { width: tw - 24, lineBreak: false });
@@ -623,11 +599,8 @@ const PDFService = {
     PDFService._rect(doc, ML, startY, 5, curY - startY + 6, stripes[ci]);
 
     // Separator rule
-    const rR = parseInt(CF.rule.slice(1, 3), 16);
-    const rG = parseInt(CF.rule.slice(3, 5), 16);
-    const rB = parseInt(CF.rule.slice(5, 7), 16);
     doc.moveTo(ML, curY + 4).lineTo(PW - ML, curY + 4)
-      .strokeColor(rR, rG, rB).lineWidth(0.4).stroke();
+      .strokeColor(CF.rule).lineWidth(0.4).stroke();
 
     doc.y = curY + 14;
     doc.x = ML;
@@ -653,7 +626,7 @@ const PDFService = {
     PDFService._fc(doc, CF.greenDark);
     doc.fontSize(14).font('Helvetica-Bold')
       .text(
-        isHindi ? '\u2B50 Full Report Unlock Karo \u2014 Sirf \u20B9499!' : '\u2B50 Unlock Your Full Report \u2014 Just \u20B9499!',
+        isHindi ? 'Unlock Full Report - Sirf Rs.499!' : 'Unlock Your Full Report - Just Rs.499!',
         ML + 14, y + 18, { width: CW - 60 },
       );
 
@@ -669,7 +642,7 @@ const PDFService = {
     PDFService._fc(doc, CF.green);
     doc.fontSize(10.5).font('Helvetica-Bold')
       .text(
-        isHindi ? `Abhi Upgrade Karo \u2192 ${upgradeUrl}` : `Upgrade Now \u2192 ${upgradeUrl}`,
+        isHindi ? `Abhi Upgrade Karo -> ${upgradeUrl}` : `Upgrade Now -> ${upgradeUrl}`,
         ML + 14, y + 82, { width: CW - 28, link: upgradeUrl, underline: true },
       );
 
@@ -685,11 +658,9 @@ const PDFService = {
     const h = 76;
     PDFService._roundRect(doc, ML, y, CW, h, 10, CF.greenPale);
     PDFService._roundRect(doc, ML, y, CW, 5, 5, CF.green);
-    PDFService._fc(doc, CF.green);
-    doc.fontSize(24).font('Helvetica-Bold').text('\u2726', ML + 14, y + 12);
     PDFService._fc(doc, CF.dark);
     doc.fontSize(10.5).font('Helvetica-Oblique')
-      .text(text, ML + 46, y + 16, { width: CW - 60 });
+      .text(text, ML + 14, y + 16, { width: CW - 28 });
     doc.y = y + h + 14;
     doc.x = ML;
   },
