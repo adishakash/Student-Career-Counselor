@@ -1,6 +1,5 @@
 'use strict';
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer');
 const config = require('../../config/config');
 const StorageService = require('../storage/StorageService');
 const logger = require('../../utils/logger');
@@ -34,10 +33,8 @@ const PDFService = {
     let browser;
     try {
       browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        headless: true,
       });
       const page = await browser.newPage();
       // setContent + networkidle0 ensures all CSS is applied before print
