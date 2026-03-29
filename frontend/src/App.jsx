@@ -20,11 +20,20 @@ function PageLoader() {
   );
 }
 
+const getBasename = () => {
+  if (typeof window === 'undefined') return '';
+  const path = window.location.pathname;
+  if (path.startsWith('/hi')) return '/hi';
+  if (path.startsWith('/en')) return '/en';
+  return '';
+};
+
 export default function App() {
+  const basename = getBasename();
   return (
     <LanguageProvider>
     <AppProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<HomePage />} />
