@@ -12,7 +12,7 @@ class StaticProvider extends LLMProvider {
   }
 
   async generateQuestions(studentProfile, assessmentId) {
-    const questions = getStaticQuestions(studentProfile.language || 'en', studentProfile.planType);
+    const questions = getStaticQuestions(studentProfile.language || 'en', studentProfile.planType, studentProfile.standard);
     return {
       questions,
       logData: this.buildLogData('success'),
