@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "npm install && npx puppeteer browsers install chrome",
+    "build": "npm install",
     "dev": "nodemon server.js",
     "lint": "eslint src/**/*.js"
   },
@@ -25,7 +25,8 @@
     "morgan": "^1.10.0",
     "nodemailer": "^8.0.4",
     "pdfkit": "^0.15.0",
-    "puppeteer": "^24.15.0",
+    "puppeteer-core": "24.5.0",
+    "@sparticuz/chromium": "131.0.1",
     "pg": "^8.11.3",
     "razorpay": "^2.9.2",
     "uuid": "^9.0.1",

@@ -1,30 +1,24 @@
-﻿'use strict';
-const puppeteer = require('puppeteer');
+'use strict';
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const config = require('../../config/config');
 const StorageService = require('../storage/StorageService');
 const logger = require('../../utils/logger');
 const { buildFreeReportHTML } = require('./templates/freeReport');
 const { buildPaidReportHTML } = require('./templates/paidReport');
 
-// â”€â”€ Puppeteer launch args (safe for containerised / root environments) â”€â”€â”€â”€â”€â”€â”€
-const PUPPETEER_ARGS = [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  '--disable-dev-shm-usage',
-  '--disable-gpu',
-];
 
-// â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Service ───────────────────────────────────────────────────────────────────
 const PDFService = {
   /**
    * Generate a PDF from an HTML/CSS template rendered by Puppeteer.
    *
    * @param {object} opts
-   * @param {object}  opts.student       â€“ { name, standard, age, email }
-   * @param {object}  opts.reportContent â€“ LLM report payload
-   * @param {string}  opts.reportType    â€“ 'free' | 'paid'
+   * @param {object}  opts.student       – { name, standard, age, email }
+   * @param {object}  opts.reportContent – LLM report payload
+   * @param {string}  opts.reportType    – 'free' | 'paid'
    * @param {string}  [opts.upgradeToken]
-   * @param {string}  [opts.language]    â€“ 'en' | 'hi'
+   * @param {string}  [opts.language]    – 'en' | 'hi'
    * @returns {{ filename: string, key: string }}
    */
   async generate({ student, reportContent, reportType, upgradeToken, language = 'en' }) {
@@ -39,7 +33,12 @@ const PDFService = {
 
     let browser;
     try {
-      browser = await puppeteer.launch({ headless: true, args: PUPPETEER_ARGS });
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
       const page = await browser.newPage();
       // setContent + networkidle0 ensures all CSS is applied before print
       await page.setContent(html, { waitUntil: 'networkidle0' });
