@@ -1,6 +1,6 @@
 'use strict';
 const LLMProvider = require('./LLMProvider');
-const { FREE_QUESTIONS, PAID_EXTRA_QUESTIONS } = require('./staticQuestions');
+const { getStaticQuestions } = require('./staticQuestions');
 
 /**
  * StaticProvider — uses built-in question bank and rule-based report generation.
@@ -12,10 +12,7 @@ class StaticProvider extends LLMProvider {
   }
 
   async generateQuestions(studentProfile, assessmentId) {
-    const questions = [...FREE_QUESTIONS];
-    if (studentProfile.planType === 'paid') {
-      questions.push(...PAID_EXTRA_QUESTIONS);
-    }
+    const questions = getStaticQuestions(studentProfile.language || 'en', studentProfile.planType);
     return {
       questions,
       logData: this.buildLogData('success'),

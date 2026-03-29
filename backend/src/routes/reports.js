@@ -25,7 +25,7 @@ router.post('/generate', async (req, res, next) => {
 
     // Fetch assessment + student + answers
     const assessmentResult = await db.query(
-      `SELECT a.id, a.plan_type, a.status, a.payment_status,
+      `SELECT a.id, a.plan_type, a.status, a.payment_status, a.language,
               s.id as student_id, s.name, s.email, s.age, s.standard
        FROM assessments a
        JOIN students s ON s.id = a.student_id
@@ -81,6 +81,7 @@ router.post('/generate', async (req, res, next) => {
         age: assessment.age,
         standard: assessment.standard,
         planType: assessment.plan_type,
+        language: assessment.language || 'en',
       };
 
       // Generate AI report content
@@ -123,6 +124,7 @@ router.post('/generate', async (req, res, next) => {
         reportContent,
         reportType: assessment.plan_type,
         upgradeToken,
+        language: assessment.language || 'en',
       });
 
       pdfPath = pdfResult.key;
@@ -153,6 +155,7 @@ router.post('/generate', async (req, res, next) => {
       pdfPath,
       studentId: assessment.student_id,
       assessmentId,
+      language: assessment.language || 'en',
     });
 
     res.json({
@@ -181,7 +184,7 @@ router.post(
       const result = await db.query(
         `SELECT r.id, r.pdf_path, r.report_type,
                 s.name, s.email,
-                r.student_id, a.id as assessment_id
+                r.student_id, a.id as assessment_id, a.language
          FROM reports r
          JOIN students s ON s.id = r.student_id
          JOIN assessments a ON a.id = r.assessment_id
@@ -209,6 +212,7 @@ router.post(
         studentId: report.student_id,
         assessmentId: report.assessment_id,
         isResend: true,
+        language: report.language || 'en',
       });
 
       res.json({

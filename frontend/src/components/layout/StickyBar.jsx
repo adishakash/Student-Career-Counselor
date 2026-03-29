@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Share2, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function StickyBar({ onStart }) {
   const [shared, setShared] = useState(false);
+  const { t } = useLanguage();
 
   const handleShare = async () => {
     const shareData = {
@@ -29,7 +31,7 @@ export default function StickyBar({ onStart }) {
         onClick={onStart}
         className="flex-1 btn-secondary text-sm py-2.5 flex items-center justify-center gap-2"
       >
-        Start Free Assessment
+        {t.sticky.startBtn}
         <ArrowRight className="w-4 h-4" />
       </button>
       <button
@@ -38,7 +40,7 @@ export default function StickyBar({ onStart }) {
         aria-label="Share"
       >
         {shared ? (
-          <span className="text-xs text-teal-600 font-semibold px-1">Copied!</span>
+          <span className="text-xs text-teal-600 font-semibold px-1">{t.sticky.copied}</span>
         ) : (
           <Share2 className="w-5 h-5" />
         )}

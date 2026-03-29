@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Star, Lock, AlertCircle, Shield, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getUpgradeInfo, createPaymentOrder, verifyPayment, recordPaymentFailure, generateReport } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Button from '../components/ui/Button';
@@ -22,8 +23,10 @@ export default function UpgradePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { dispatch } = useApp();
+  const { t } = useLanguage();
 
   const token = searchParams.get('token');
+  const up = t.upgrade;
 
   const [status, setStatus] = useState('validating'); // validating | ready | processing | generating | error | invalid | timeout
   const [studentInfo, setStudentInfo] = useState(null);
@@ -142,7 +145,7 @@ export default function UpgradePage() {
       <div className="bg-primary-800 text-white px-4 py-4">
         <div className="max-w-lg mx-auto flex items-center gap-2">
           <Lock className="w-5 h-5 text-amber-400" />
-          <span className="font-semibold">Upgrade to Premium</span>
+          <span className="font-semibold">{up.title}</span>
         </div>
       </div>
 
@@ -152,24 +155,23 @@ export default function UpgradePage() {
           {status === 'validating' && (
             <div className="flex flex-col items-center py-10 gap-4">
               <LoadingSpinner size="lg" />
-              <p className="text-slate-500">Verifying your upgrade link...</p>
+              <p className="text-slate-500">{up.processing}</p>
             </div>
           )}
 
           {status === 'generating' && (
             <div className="flex flex-col items-center py-10 gap-4">
               <LoadingSpinner size="lg" />
-              <p className="text-slate-600 font-medium">Generating your Premium Report...</p>
-              <p className="text-slate-400 text-xs text-center">Our AI is crafting your personalised career analysis. This may take up to a minute.</p>
+              <p className="text-slate-600 font-medium">{up.generating}</p>
             </div>
           )}
 
           {status === 'invalid' && (
             <div className="text-center py-6">
               <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-800 mb-2">Invalid Upgrade Link</h2>
+              <h2 className="text-xl font-bold text-slate-800 mb-2">{up.invalidToken}</h2>
               <p className="text-slate-500 text-sm mb-6">{error}</p>
-              <Button onClick={() => navigate('/')} variant="outline">Go to Home</Button>
+              <Button onClick={() => navigate('/')} variant="outline">{up.goHome}</Button>
             </div>
           )}
 
@@ -177,15 +179,15 @@ export default function UpgradePage() {
             <div className="text-center py-6">
               <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-slate-800 mb-2">Server Unavailable</h2>
-              <p className="text-slate-500 text-sm mb-6">{error}</p>
+              <p className="text-slate-500 text-sm mb-6">{up.timeoutMsg}</p>
               <div className="flex flex-col gap-3">
                 <Button
                   onClick={() => { setStatus('validating'); setError(''); validateToken(); }}
                   variant="primary"
                 >
-                  Try Again
+                  {up.tryAgain}
                 </Button>
-                <Button onClick={() => navigate('/')} variant="outline">Go to Home</Button>
+                <Button onClick={() => navigate('/')} variant="outline">{up.goHome}</Button>
               </div>
             </div>
           )}
@@ -196,8 +198,8 @@ export default function UpgradePage() {
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="w-8 h-8 text-amber-500 fill-amber-500" />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900 mb-1">Upgrade to Premium</h1>
-                <p className="text-slate-500 text-sm">Hi {studentInfo.studentName}! Get your full personalized career report.</p>
+                <h1 className="text-2xl font-bold text-slate-900 mb-1">{up.title}</h1>
+                <p className="text-slate-500 text-sm">{up.subtitle}</p>
               </div>
 
               <ul className="space-y-2 mb-6">
@@ -228,7 +230,7 @@ export default function UpgradePage() {
                 size="lg"
                 variant="secondary"
               >
-                Pay ₹499 & Get Premium Report
+                {up.payBtn}
               </Button>
 
               <div className="flex items-center justify-center gap-4 mt-3 text-xs text-slate-400">

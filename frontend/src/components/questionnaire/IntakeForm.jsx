@@ -3,19 +3,7 @@ import { useForm } from 'react-hook-form';
 import { ArrowRight, GraduationCap } from 'lucide-react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
-
-const STANDARDS = [
-  '8th',
-  '9th',
-  '10th',
-  '11th Science',
-  '11th Commerce',
-  '11th Arts/Humanities',
-  '12th Science',
-  '12th Commerce',
-  '12th Arts/Humanities',
-  'Graduated (Class 12 done)',
-];
+import { useLanguage } from '../../context/LanguageContext';
 
 /** Strips whitespace, dashes, +, () from a phone string for digit-only validation */
 const stripPhone = (v = '') => v.replace(/[\s\-+()]/g, '');
@@ -25,6 +13,7 @@ const stripPhone = (v = '') => v.replace(/[\s\-+()]/g, '');
  * Props: onSubmit(data), planType, isLoading
  */
 export default function IntakeForm({ onSubmit, planType, isLoading }) {
+  const { t } = useLanguage();
   const {
     register,
     handleSubmit,
@@ -45,6 +34,8 @@ export default function IntakeForm({ onSubmit, planType, isLoading }) {
     });
   };
 
+  const e = t.intake.errors;
+
   return (
     <div className="card max-w-lg mx-auto w-full animate-slide-up">
       <div className="flex items-center gap-3 mb-6">
@@ -52,61 +43,58 @@ export default function IntakeForm({ onSubmit, planType, isLoading }) {
           <GraduationCap className="w-6 h-6 text-primary-700" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Let's Get Started</h2>
+          <h2 className="text-xl font-bold text-slate-900">{t.intake.title}</h2>
           <p className="text-sm text-slate-500">
-            {isPaid ? 'Premium Report — ₹499' : 'Free Report'}
+            {isPaid ? t.intake.paidLabel : t.intake.freeLabel}
           </p>
         </div>
       </div>
 
       <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-        Fill in your details below. Your report will be sent to your email
-        {isPaid ? ' after payment is confirmed.' : '.'}
+        {t.intake.description}
+        {isPaid ? t.intake.descriptionPaid : t.intake.descriptionFree}
       </p>
 
       <form onSubmit={handleSubmit(submitHandler)} className="space-y-5" noValidate>
 
         {/* Full Name */}
         <Input
-          label="Full Name"
+          label={t.intake.nameLbl}
           type="text"
-          placeholder="e.g. Rahul Sharma"
+          placeholder={t.intake.namePlaceholder}
           required
           autoComplete="name"
           error={errors.name?.message}
           success={isOk('name')}
           {...register('name', {
-            required: 'Full name is required',
-            minLength: { value: 2, message: 'Name must be at least 2 characters' },
-            maxLength: { value: 60, message: 'Name must be 60 characters or fewer' },
+            required: e.nameRequired,
+            minLength: { value: 2, message: e.nameMin },
+            maxLength: { value: 60, message: e.nameMax },
             validate: {
-              notBlank: (v) =>
-                v.trim().length >= 2 || 'Name cannot be blank or only spaces',
-              noNumbers: (v) =>
-                !/\d/.test(v) || 'Name should not contain numbers',
+              notBlank: (v) => v.trim().length >= 2 || e.nameBlank,
+              noNumbers: (v) => !/\d/.test(v) || e.nameNumbers,
               validChars: (v) =>
-                /^[a-zA-Z\u0900-\u097F\s'.,-]+$/.test(v.trim()) ||
-                'Name can only contain letters, spaces, or hyphens',
+                /^[a-zA-Z\u0900-\u097F\s'.,-]+$/.test(v.trim()) || e.nameChars,
             },
           })}
         />
 
         {/* Email */}
         <Input
-          label="Email Address"
+          label={t.intake.emailLbl}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t.intake.emailPlaceholder}
           required
           autoComplete="email"
           error={errors.email?.message}
           success={isOk('email')}
-          helper={!errors.email && !touchedFields.email ? 'Your report will be sent here' : undefined}
+          helper={!errors.email && !touchedFields.email ? t.intake.emailHelper : undefined}
           {...register('email', {
-            required: 'Email address is required',
-            maxLength: { value: 254, message: 'Email address is too long' },
+            required: e.emailRequired,
+            maxLength: { value: 254, message: e.emailMax },
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
-              message: 'Enter a valid email address (e.g. name@gmail.com)',
+              message: e.emailInvalid,
             },
           })}
         />
@@ -114,10 +102,95 @@ export default function IntakeForm({ onSubmit, planType, isLoading }) {
         <div className="grid grid-cols-2 gap-4">
           {/* Age */}
           <Input
-            label="Age"
+            label={t.intake.ageLbl}
             type="number"
-            placeholder="e.g. 16"
+            placeholder={t.intake.agePlaceholder}
             required
+            min={10}
+            max={28}
+            step={1}
+            autoComplete="off"
+            error={errors.age?.message}
+            success={isOk('age')}
+            {...register('age', {
+              required: e.ageRequired,
+              min: { value: 10, message: e.ageMin },
+              max: { value: 28, message: e.ageMax },
+              valueAsNumber: true,
+              validate: (v) =>
+                (!isNaN(v) && Number.isInteger(v)) || e.ageRequired,
+            })}
+          />
+
+          {/* Class / Standard */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              {t.intake.standardLbl} <span className="text-red-500">*</span>
+            </label>
+            <select
+              className={`input-field ${
+                errors.standard
+                  ? 'border-red-400 focus:ring-red-400 focus:border-red-400'
+                  : isOk('standard')
+                  ? 'border-teal-400 focus:ring-teal-400 focus:border-teal-400'
+                  : ''
+              }`}
+              {...register('standard', { required: e.standardRequired })}
+            >
+              <option value="">{t.intake.standardPlaceholder}</option>
+              {t.intake.standards.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            {errors.standard && (
+              <p className="mt-1.5 text-sm text-red-500">{errors.standard.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Phone */}
+        <Input
+          label={t.intake.phoneLbl}
+          type="tel"
+          placeholder={t.intake.phonePlaceholder}
+          autoComplete="tel"
+          error={errors.phone?.message}
+          success={isOk('phone') && !errors.phone}
+          helper={!errors.phone && !touchedFields.phone ? t.intake.phoneHelper : undefined}
+          {...register('phone', {
+            validate: (v) => {
+              if (!v || v.trim() === '') return true;
+              const digits = stripPhone(v);
+              return (
+                /^(91|0)?[6-9]\d{9}$/.test(digits) || e.phoneInvalid
+              );
+            },
+          })}
+        />
+
+        {/* Privacy note */}
+        <p className="text-xs text-slate-400">
+          🔒 Your information is private and used only to generate your report. We never spam.
+        </p>
+
+        <Button
+          type="submit"
+          loading={isLoading}
+          fullWidth
+          size="lg"
+          variant={isPaid ? 'secondary' : 'primary'}
+        >
+          {isLoading
+            ? t.intake.submittingBtn
+            : isPaid
+              ? `${t.intake.submitBtn} — ₹499`
+              : t.intake.submitBtn}
+          <ArrowRight className="w-5 h-5" />
+        </Button>
+      </form>
+    </div>
+  );
+}
             min={10}
             max={28}
             step={1}

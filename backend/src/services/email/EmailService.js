@@ -31,13 +31,18 @@ const EmailService = {
   /**
    * Send the career report PDF to the student via email.
    */
-  async sendReport({ to, studentName, reportType, pdfPath, studentId, assessmentId, isResend = false }) {
+  async sendReport({ to, studentName, reportType, pdfPath, studentId, assessmentId, isResend = false, language = 'en' }) {
     const isPaid = reportType === 'paid';
+    const isHindi = language === 'hi';
     const subject = isPaid
-      ? `Your Premium Career Counseling Report is Ready — ${config.company.name}`
-      : `Your Free Career Counseling Report — ${config.company.name}`;
+      ? (isHindi
+          ? `तुम्हारी Premium Career Counseling Report तैयार है — ${config.company.name}`
+          : `Your Premium Career Counseling Report is Ready — ${config.company.name}`)
+      : (isHindi
+          ? `तुम्हारी Free Career Counseling Report — ${config.company.name}`
+          : `Your Free Career Counseling Report — ${config.company.name}`);
 
-    const html = EmailService._buildReportEmailHTML(studentName, reportType, isResend, config.company);
+    const html = EmailService._buildReportEmailHTML(studentName, reportType, isResend, config.company, language);
 
     let logId = null;
     try {
@@ -92,19 +97,42 @@ const EmailService = {
     }
   },
 
-  _buildReportEmailHTML(studentName, reportType, isResend, company) {
-    const greeting = isResend ? `Hi ${studentName},` : `Congratulations, ${studentName}! 🎉`;
-    const typeLabel = reportType === 'paid' ? 'Premium Career Counseling' : 'Free Career Counseling';
-    const intro = isResend
-      ? `As requested, here is your <strong>${typeLabel} Report</strong> from ${company.name}.`
-      : `Thank you for completing your career assessment with <strong>${company.name}</strong>. Your <strong>${typeLabel} Report</strong> is ready!`;
+  _buildReportEmailHTML(studentName, reportType, isResend, company, language = 'en') {
+    const isHindi = language === 'hi';
+
+    let greeting, intro, attachNote, contactNote, closing;
+    if (isHindi) {
+      greeting = isResend ? `नमस्ते ${studentName},` : `बधाई हो, ${studentName}! 🎉`;
+      const typeLabel = reportType === 'paid' ? 'Premium Career Counseling' : 'Free Career Counseling';
+      intro = isResend
+        ? `जैसा तुमने request किया था, यह रहा तुम्हारा <strong>${typeLabel} Report</strong> ${company.name} की तरफ से।`
+        : `<strong>${company.name}</strong> के साथ career assessment complete करने के लिए शुक्रिया। तुम्हारी <strong>${typeLabel} Report</strong> तैयार है!`;
+      attachNote = 'तुम्हारी report PDF की form में इस email के साथ attached है। इसे ध्यान से पढ़ो और अपने parents या guardian के साथ share करो।';
+      contactNote = 'कोई सवाल है या report discuss करनी है तो हमसे contact करो:';
+      closing = `तुम्हारे उज्जवल भविष्य की शुभकामनाएं,<br><strong style="color:#1e293b;">${company.name} Team</strong>`;
+    } else {
+      greeting = isResend ? `Hi ${studentName},` : `Congratulations, ${studentName}! 🎉`;
+      const typeLabel = reportType === 'paid' ? 'Premium Career Counseling' : 'Free Career Counseling';
+      intro = isResend
+        ? `As requested, here is your <strong>${typeLabel} Report</strong> from ${company.name}.`
+        : `Thank you for completing your career assessment with <strong>${company.name}</strong>. Your <strong>${typeLabel} Report</strong> is ready!`;
+      attachNote = 'Please find your report attached to this email as a PDF. Review it carefully and share it with your parents or guardian.';
+      contactNote = 'If you have any questions or would like to discuss your report, feel free to reach out to us:';
+      closing = `Wishing you a bright future,<br><strong style="color:#1e293b;">${company.name} Team</strong>`;
+    }
 
     const upgradeSection = reportType === 'free'
-      ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;margin:24px 0;border-radius:4px;">
-           <p style="margin:0;font-weight:bold;color:#92400e;">Want a deeper analysis?</p>
-           <p style="margin:8px 0 0;color:#78350f;">Upgrade to our <strong>Premium Report</strong> for only ₹499 and get personalized career paths, personality insights, and a detailed action plan.</p>
-           <p style="margin:8px 0 0;"><a href="${company.website}" style="color:#1e40af;font-weight:bold;">Upgrade Now →</a></p>
-         </div>`
+      ? (isHindi
+          ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;margin:24px 0;border-radius:4px;">
+               <p style="margin:0;font-weight:bold;color:#92400e;">Deeper analysis चाहिए?</p>
+               <p style="margin:8px 0 0;color:#78350f;">सिर्फ ₹499 में <strong>Premium Report</strong> upgrade करो और personalized career paths, personality insights और detailed action plan पाओ।</p>
+               <p style="margin:8px 0 0;"><a href="${company.website}" style="color:#1e40af;font-weight:bold;">अभी Upgrade करें →</a></p>
+             </div>`
+          : `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;margin:24px 0;border-radius:4px;">
+               <p style="margin:0;font-weight:bold;color:#92400e;">Want a deeper analysis?</p>
+               <p style="margin:8px 0 0;color:#78350f;">Upgrade to our <strong>Premium Report</strong> for only ₹499 and get personalized career paths, personality insights, and a detailed action plan.</p>
+               <p style="margin:8px 0 0;"><a href="${company.website}" style="color:#1e40af;font-weight:bold;">Upgrade Now →</a></p>
+             </div>`)
       : '';
 
     return `<!DOCTYPE html>
@@ -119,14 +147,14 @@ const EmailService = {
     <div style="padding:32px 40px;">
       <p style="font-size:18px;color:#1e293b;font-weight:bold;">${greeting}</p>
       <p style="color:#475569;line-height:1.6;">${intro}</p>
-      <p style="color:#475569;line-height:1.6;">Please find your report attached to this email as a PDF. Review it carefully and share it with your parents or guardian.</p>
+      <p style="color:#475569;line-height:1.6;">${attachNote}</p>
       ${upgradeSection}
-      <p style="color:#475569;line-height:1.6;">If you have any questions or would like to discuss your report, feel free to reach out to us:</p>
+      <p style="color:#475569;line-height:1.6;">${contactNote}</p>
       <div style="background:#f1f5f9;padding:16px 20px;border-radius:6px;margin:16px 0;">
         <p style="margin:0;color:#334155;"><strong>📧 Email:</strong> <a href="mailto:${company.email}" style="color:#1e40af;">${company.email}</a></p>
         <p style="margin:8px 0 0;color:#334155;"><strong>📍 Address:</strong> ${company.address}</p>
       </div>
-      <p style="color:#94a3b8;font-size:13px;margin-top:32px;">Wishing you a bright future,<br><strong style="color:#1e293b;">${company.name} Team</strong></p>
+      <p style="color:#94a3b8;font-size:13px;margin-top:32px;">${closing}</p>
     </div>
     <div style="background:#f8fafc;padding:16px 40px;border-top:1px solid #e2e8f0;text-align:center;">
       <p style="color:#94a3b8;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} ${company.name}. All rights reserved.</p>

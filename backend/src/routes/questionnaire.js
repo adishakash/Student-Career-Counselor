@@ -18,7 +18,7 @@ router.get('/questions/:assessmentId', async (req, res, next) => {
 
     // 1. Check assessment is valid and in the right state
     const assessmentResult = await db.query(
-      `SELECT a.id, a.plan_type, a.status, a.payment_status,
+      `SELECT a.id, a.plan_type, a.status, a.payment_status, a.language,
               s.name, s.age, s.standard, s.email
        FROM assessments a
        JOIN students s ON s.id = a.student_id
@@ -56,6 +56,7 @@ router.get('/questions/:assessmentId', async (req, res, next) => {
       age: assessment.age,
       standard: assessment.standard,
       planType: assessment.plan_type,
+      language: assessment.language || 'en',
     };
 
     const llmService = LLMFactory.getProvider();

@@ -19,7 +19,7 @@ router.post(
   validate(schemas.registerSchema),
   async (req, res, next) => {
     try {
-      const { name, email, age, standard, phone, planType } = req.body;
+      const { name, email, age, standard, phone, planType, language = 'en' } = req.body;
       const normalizedEmail = normalizeEmail(email);
 
       const result = await db.withTransaction(async (client) => {
@@ -43,10 +43,10 @@ router.post(
         const assessmentStatus = planType === 'free' ? 'in_progress' : 'payment_pending';
 
         const assessmentResult = await client.query(
-          `INSERT INTO assessments (student_id, plan_type, status, payment_status)
-           VALUES ($1, $2, $3, $4)
+          `INSERT INTO assessments (student_id, plan_type, status, payment_status, language)
+           VALUES ($1, $2, $3, $4, $5)
            RETURNING id`,
-          [studentId, planType, assessmentStatus, paymentStatus]
+          [studentId, planType, assessmentStatus, paymentStatus, language]
         );
         const assessmentId = assessmentResult.rows[0].id;
 

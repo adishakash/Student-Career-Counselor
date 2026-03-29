@@ -38,9 +38,49 @@ const PH = 841.89;   // page height
 const ML = 48;       // left/right margin
 const CW = PW - ML * 2; // content width ≈ 499 pt
 
+// ── Language label lookup ────────────────────────────────────────────────────
+function getLabels(language) {
+  if (language === 'hi') {
+    return {
+      careerOverview:       'Career Overview',
+      keyStrengths:         'Key Strengths',
+      careerPaths:          'Career Paths',
+      nextSteps:            'Next Steps',
+      executiveSummary:     'Executive Summary',
+      personalityStyle:     'Personality & Learning Style',
+      interestPattern:      'Interest Pattern Analysis',
+      personalisedPaths:    'Personalised Career Paths',
+      academicRoadmap:      'Academic & Skill Roadmap',
+      actionPlan:           'Action Plan',
+      overview_sub:         '(tumhara career overview)',
+      strengths_sub:        '(tumhari strengths)',
+      steps_sub:            '(agle steps)',
+      pursuePath:           'Is path ke liye kya karein:',
+      contactNudge: (email) => `Personalized guidance ke liye hum se contact karein: ${email}`,
+    };
+  }
+  return {
+    careerOverview:       'Your Career Overview',
+    keyStrengths:         'Your Key Strengths',
+    careerPaths:          'Suggested Career Paths',
+    nextSteps:            'Recommended Next Steps',
+    executiveSummary:     'Executive Summary',
+    personalityStyle:     'Personality & Learning Style',
+    interestPattern:      'Interest Pattern Analysis',
+    personalisedPaths:    'Personalised Career Paths',
+    academicRoadmap:      'Academic & Skill Roadmap',
+    actionPlan:           'Your Action Plan',
+    overview_sub:         null,
+    strengths_sub:        null,
+    steps_sub:            null,
+    pursuePath:           'How to pursue this path:',
+    contactNudge: (email) => `For personalised guidance, reach us at ${email}`,
+  };
+}
+
 // ── Service ───────────────────────────────────────────────────────────────────
 const PDFService = {
-  async generate({ student, reportContent, reportType, upgradeToken }) {
+  async generate({ student, reportContent, reportType, upgradeToken, language = 'en' }) {
     const timestamp = Date.now();
     const safeName = (student.name || 'student').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
     const filename = `report_${safeName}_${timestamp}.pdf`;
@@ -65,9 +105,9 @@ const PDFService = {
       doc.on('error', reject);
 
       if (reportType === 'paid') {
-        PDFService._buildPaidReport(doc, student, reportContent, config.company);
+        PDFService._buildPaidReport(doc, student, reportContent, config.company, language);
       } else {
-        PDFService._buildFreeReport(doc, student, reportContent, upgradeToken, config.company);
+        PDFService._buildFreeReport(doc, student, reportContent, upgradeToken, config.company, language);
       }
 
       doc.end();
@@ -212,7 +252,8 @@ const PDFService = {
   /**
    * Numbered career card.
    */
-  _drawCareerCard(doc, career, index, showPathway) {
+  _drawCareerCard(doc, career, index, showPathway, L) {
+    const labels = L || getLabels('en');
     if (doc.y > PH - 155) {
       doc.addPage();
       doc.y = 50;
@@ -256,7 +297,7 @@ const PDFService = {
     // ── Pathway (paid) ────────────────────────────────────────────────────────
     if (showPathway && career.pathway) {
       doc.fillColor(rgb(C.emerald600)).fontSize(10).font('Helvetica-Bold')
-        .text('How to pursue this path:', tx, curY);
+        .text(labels.pursuePath, tx, curY);
       curY = doc.y;
       doc.fillColor(rgb(C.gray700)).fontSize(10).font('Helvetica')
         .text(career.pathway, tx, curY, { width: tw });
@@ -275,7 +316,8 @@ const PDFService = {
   /**
    * Amber upgrade CTA box.
    */
-  _drawUpgradeCTA(doc, upgradeToken, company) {
+  _drawUpgradeCTA(doc, upgradeToken, company, language) {
+    const isHindi = language === 'hi';
     if (doc.y > PH - 135) {
       doc.addPage();
       doc.y = 50;
@@ -295,22 +337,28 @@ const PDFService = {
 
     // Headline
     doc.fillColor(rgb(C.gray900)).fontSize(13.5).font('Helvetica-Bold')
-      .text('Unlock Your Full Personalised Report \u2014 Only \u20B9499', ML + 18, y + 16, { width: CW - 28 });
+      .text(
+        isHindi
+          ? 'Apni Full Report Unlock Karo — Sirf \u20B9499'
+          : 'Unlock Your Full Personalised Report \u2014 Only \u20B9499',
+        ML + 18, y + 16, { width: CW - 28 },
+      );
 
     // Sub-text
     doc.fillColor(rgb(C.gray700)).fontSize(10.5).font('Helvetica')
       .text(
-        'Get in-depth career analysis, 6+ career paths, personality insights, and a personalised action plan.',
+        isHindi
+          ? '6+ career paths, personality insights aur personalised action plan pao.'
+          : 'Get in-depth career analysis, 6+ career paths, personality insights, and a personalised action plan.',
         ML + 18, y + 40, { width: CW - 28 },
       );
 
     // Upgrade link
     doc.fillColor(rgb(C.indigo600)).fontSize(10).font('Helvetica-Bold')
-      .text(`Upgrade Now \u2192 ${upgradeUrl}`, ML + 18, y + 76, {
-        width: CW - 28,
-        link: upgradeUrl,
-        underline: true,
-      });
+      .text(
+        isHindi ? `Abhi Upgrade Karo \u2192 ${upgradeUrl}` : `Upgrade Now \u2192 ${upgradeUrl}`,
+        ML + 18, y + 76, { width: CW - 28, link: upgradeUrl, underline: true },
+      );
 
     doc.y = y + h + 18;
     doc.x = ML;
@@ -332,12 +380,13 @@ const PDFService = {
 
   // ── Free Report ───────────────────────────────────────────────────────────
 
-  _buildFreeReport(doc, student, report, upgradeToken, company) {
+  _buildFreeReport(doc, student, report, upgradeToken, company, language = 'en') {
+    const L = getLabels(language);
     PDFService._drawHeader(doc, company, 'free');
     PDFService._drawStudentCard(doc, student);
 
     // Career Overview
-    PDFService._drawSectionTitle(doc, 'Your Career Overview');
+    PDFService._drawSectionTitle(doc, L.careerOverview);
     doc.fillColor(rgb(C.gray700)).fontSize(11).font('Helvetica')
       .text(
         report.summary ||
@@ -348,29 +397,30 @@ const PDFService = {
     doc.x = ML;
 
     // Key Strengths
-    PDFService._drawSectionTitle(doc, 'Your Key Strengths', C.emerald600);
+    PDFService._drawSectionTitle(doc, L.keyStrengths, C.emerald600);
     (report.strengths || []).forEach((s) => PDFService._drawBullet(doc, s));
     doc.moveDown(1);
 
     // Suggested Career Paths (top 3)
-    PDFService._drawSectionTitle(doc, 'Suggested Career Paths');
+    PDFService._drawSectionTitle(doc, L.careerPaths);
     (report.careerSuggestions || []).slice(0, 3)
-      .forEach((s, i) => PDFService._drawCareerCard(doc, s, i, false));
+      .forEach((s, i) => PDFService._drawCareerCard(doc, s, i, false, L));
 
     // Next Steps
-    PDFService._drawSectionTitle(doc, 'Recommended Next Steps', C.emerald600);
+    PDFService._drawSectionTitle(doc, L.nextSteps, C.emerald600);
     (report.nextSteps || []).slice(0, 4).forEach((s) => PDFService._drawBullet(doc, s));
     doc.moveDown(1.2);
 
     // Upgrade CTA
-    if (upgradeToken) PDFService._drawUpgradeCTA(doc, upgradeToken, company);
+    if (upgradeToken) PDFService._drawUpgradeCTA(doc, upgradeToken, company, language);
 
     PDFService._drawFooter(doc, company);
   },
 
   // ── Paid Report ───────────────────────────────────────────────────────────
 
-  _buildPaidReport(doc, student, report, company) {
+  _buildPaidReport(doc, student, report, company, language = 'en') {
+    const L = getLabels(language);
     PDFService._drawHeader(doc, company, 'paid');
     PDFService._drawStudentCard(doc, student);
 
@@ -383,7 +433,7 @@ const PDFService = {
     };
 
     // Executive Summary
-    PDFService._drawSectionTitle(doc, 'Executive Summary');
+    PDFService._drawSectionTitle(doc, L.executiveSummary);
     doc.fillColor(rgb(C.gray700)).fontSize(11).font('Helvetica')
       .text(report.summary || '', ML, doc.y, { width: CW });
     doc.moveDown(1.5);
@@ -392,7 +442,7 @@ const PDFService = {
     // Personality & Learning Style
     if (report.personalityInsights) {
       pageBreak();
-      PDFService._drawSectionTitle(doc, 'Personality & Learning Style', C.emerald600);
+      PDFService._drawSectionTitle(doc, L.personalityStyle, C.emerald600);
       doc.fillColor(rgb(C.gray700)).fontSize(11).font('Helvetica')
         .text(report.personalityInsights, ML, doc.y, { width: CW });
       doc.moveDown(1.5);
@@ -402,7 +452,7 @@ const PDFService = {
     // Interest Pattern Analysis
     if (report.interestPattern) {
       pageBreak();
-      PDFService._drawSectionTitle(doc, 'Interest Pattern Analysis', C.emerald600);
+      PDFService._drawSectionTitle(doc, L.interestPattern, C.emerald600);
       doc.fillColor(rgb(C.gray700)).fontSize(11).font('Helvetica')
         .text(report.interestPattern, ML, doc.y, { width: CW });
       doc.moveDown(1.5);
@@ -411,20 +461,20 @@ const PDFService = {
 
     // Key Strengths
     pageBreak();
-    PDFService._drawSectionTitle(doc, 'Your Key Strengths', C.emerald600);
+    PDFService._drawSectionTitle(doc, L.keyStrengths, C.emerald600);
     (report.strengths || []).forEach((s) => PDFService._drawBullet(doc, s));
     doc.moveDown(1);
 
     // Personalised Career Paths
     pageBreak();
-    PDFService._drawSectionTitle(doc, 'Personalised Career Paths');
+    PDFService._drawSectionTitle(doc, L.personalisedPaths);
     (report.careerSuggestions || []).forEach((s, i) =>
-      PDFService._drawCareerCard(doc, s, i, true),
+      PDFService._drawCareerCard(doc, s, i, true, L),
     );
 
     // Academic & Skill Roadmap
     pageBreak();
-    PDFService._drawSectionTitle(doc, 'Academic & Skill Roadmap', C.emerald600);
+    PDFService._drawSectionTitle(doc, L.academicRoadmap, C.emerald600);
     (report.academicPathways || []).forEach((s, i) =>
       PDFService._drawBullet(doc, `${i + 1}. ${s}`),
     );
@@ -432,7 +482,7 @@ const PDFService = {
 
     // Action Plan
     pageBreak();
-    PDFService._drawSectionTitle(doc, 'Your Action Plan');
+    PDFService._drawSectionTitle(doc, L.actionPlan);
     (report.nextSteps || []).forEach((s, i) =>
       PDFService._drawBullet(doc, `${i + 1}. ${s}`),
     );
@@ -445,7 +495,6 @@ const PDFService = {
       const h = 80;
       doc.rect(ML, y, CW, h).fill(rgb(C.indigo50));
       doc.rect(ML, y, 4, h).fill(rgb(C.indigo600));
-      // Large opening quote glyph
       doc.fillColor(rgb(C.indigo200)).fontSize(36).font('Helvetica-Bold')
         .text('\u201C', ML + 14, y + 6);
       doc.fillColor(rgb(C.gray700)).fontSize(11).font('Helvetica-Oblique')
@@ -458,7 +507,7 @@ const PDFService = {
     pageBreak(60);
     doc.fillColor(rgb(C.gray500)).fontSize(10).font('Helvetica')
       .text(
-        `For personalised guidance, reach us at ${company.email}`,
+        L.contactNudge(company.email),
         ML, doc.y, { width: CW, align: 'center' },
       );
     doc.moveDown(0.8);

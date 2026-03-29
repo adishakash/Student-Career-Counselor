@@ -1,12 +1,14 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
-export default function ProgressBar({ current, total, label }) {
+export default function ProgressBar({ current, total }) {
+  const { t } = useLanguage();
   const percent = Math.round((current / total) * 100);
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm font-medium text-slate-600">
-          {label || `Question ${current} of ${total}`}
+          {t.progress.label(current, total)}
         </span>
         <span className="text-sm font-bold text-primary-700">{percent}%</span>
       </div>

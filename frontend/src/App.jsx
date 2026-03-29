@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
+import { LanguageProvider } from './context/LanguageContext';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 
 // Lazy-load pages for code splitting
@@ -21,6 +22,7 @@ function PageLoader() {
 
 export default function App() {
   return (
+    <LanguageProvider>
     <AppProvider>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
@@ -36,5 +38,6 @@ export default function App() {
         </Suspense>
       </BrowserRouter>
     </AppProvider>
+    </LanguageProvider>
   );
 }

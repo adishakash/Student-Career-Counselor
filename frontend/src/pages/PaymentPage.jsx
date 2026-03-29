@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, CreditCard, AlertCircle, Lock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import { createPaymentOrder, verifyPayment, recordPaymentFailure } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Button from '../components/ui/Button';
@@ -22,11 +23,13 @@ function loadRazorpayScript() {
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
-  const [status, setStatus] = useState('loading'); // loading | ready | processing | error
+  const { t } = useLanguage();
+  const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
   const [orderData, setOrderData] = useState(null);
 
   const { assessmentId, student, studentId } = state;
+  const pm = t.payment;
 
   useEffect(() => {
     if (!assessmentId || !student) {
@@ -114,7 +117,7 @@ export default function PaymentPage() {
       <div className="bg-primary-800 text-white px-4 py-4">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <Lock className="w-5 h-5 text-amber-400" />
-          <span className="font-semibold">Secure Checkout</span>
+          <span className="font-semibold">{pm.title}</span>
         </div>
       </div>
 
@@ -124,7 +127,7 @@ export default function PaymentPage() {
           {status === 'loading' && (
             <div className="flex flex-col items-center py-8 gap-4">
               <LoadingSpinner size="lg" />
-              <p className="text-slate-500">Loading secure payment...</p>
+              <p className="text-slate-500">{pm.processing}</p>
             </div>
           )}
 
@@ -134,13 +137,12 @@ export default function PaymentPage() {
                 <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CreditCard className="w-8 h-8 text-primary-700" />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900 mb-2">Complete Payment</h1>
+                <h1 className="text-2xl font-bold text-slate-900 mb-2">{pm.title}</h1>
                 <p className="text-slate-500 text-sm">
                   Hi {student?.name}, you're one step away from your Premium Career Report!
                 </p>
               </div>
 
-              {/* Order summary */}
               <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Premium Career Counseling Report</span>
@@ -166,19 +168,14 @@ export default function PaymentPage() {
                 size="lg"
                 variant="secondary"
               >
-                Pay ₹499 Securely
+                {pm.payBtn}
               </Button>
 
-              {/* Trust signals */}
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-slate-400">
                 <div className="flex items-center gap-1">
                   <Shield className="w-3.5 h-3.5" />
-                  Razorpay Secured
+                  {pm.secureNote}
                 </div>
-                <div>•</div>
-                <span>UPI, Cards, NetBanking</span>
-                <div>•</div>
-                <span>100% Safe</span>
               </div>
             </>
           )}
@@ -188,7 +185,7 @@ export default function PaymentPage() {
               <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-slate-800 mb-2">Payment Setup Failed</h2>
               <p className="text-slate-500 text-sm mb-6">{error}</p>
-              <Button onClick={initPayment} variant="outline">Try Again</Button>
+              <Button onClick={initPayment} variant="outline">{pm.errorRetry}</Button>
             </div>
           )}
         </div>

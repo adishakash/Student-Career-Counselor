@@ -22,6 +22,7 @@ const registerSchema = Joi.object({
   standard: Joi.string().trim().max(50).required(),
   phone: Joi.string().trim().max(15).optional().allow('', null),
   planType: Joi.string().valid('free', 'paid').required(),
+  language: Joi.string().valid('en', 'hi').default('en'),
 });
 
 const answersSchema = Joi.object({

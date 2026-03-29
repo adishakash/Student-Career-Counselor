@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS assessments (
                       CHECK (status IN ('intake', 'payment_pending', 'in_progress', 'completed', 'failed')),
   payment_status    VARCHAR(20) NOT NULL DEFAULT 'not_required'
                       CHECK (payment_status IN ('not_required', 'pending', 'paid', 'failed', 'refunded')),
+  language          VARCHAR(5) NOT NULL DEFAULT 'en'
+                      CHECK (language IN ('en', 'hi')),
   started_at        TIMESTAMPTZ DEFAULT NOW(),
   completed_at      TIMESTAMPTZ,
   created_at        TIMESTAMPTZ DEFAULT NOW(),
@@ -198,3 +200,11 @@ CREATE TRIGGER set_updated_at_assessments
 CREATE TRIGGER set_updated_at_payments
   BEFORE UPDATE ON payments
   FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- ─────────────────────────────────────────────
+-- Migration: add language column to assessments
+-- Safe to run on existing databases (idempotent)
+-- ─────────────────────────────────────────────
+ALTER TABLE assessments
+  ADD COLUMN IF NOT EXISTS language VARCHAR(5) NOT NULL DEFAULT 'en'
+    CHECK (language IN ('en', 'hi'));

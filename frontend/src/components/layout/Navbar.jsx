@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, GraduationCap } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { dispatch } = useApp();
+  const { t } = useLanguage();
 
   const handleStartFree = () => {
     dispatch({ type: 'SET_PLAN_TYPE', payload: 'free' });
@@ -25,44 +28,48 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <a href="#why" className="hover:text-primary-800 transition-colors">Why Counseling?</a>
-          <a href="#pricing" className="hover:text-primary-800 transition-colors">Plans</a>
-          <a href="#testimonials" className="hover:text-primary-800 transition-colors">Stories</a>
-          <a href="#faq" className="hover:text-primary-800 transition-colors">FAQ</a>
+          <a href="#why" className="hover:text-primary-800 transition-colors">{t.nav.whyCounseling}</a>
+          <a href="#pricing" className="hover:text-primary-800 transition-colors">{t.nav.plans}</a>
+          <a href="#testimonials" className="hover:text-primary-800 transition-colors">{t.nav.stories}</a>
+          <a href="#faq" className="hover:text-primary-800 transition-colors">{t.nav.faq}</a>
         </div>
 
-        {/* CTA */}
+        {/* CTA + Language switcher */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher />
           <button
             onClick={handleStartFree}
             className="btn-primary text-sm px-5 py-2"
           >
-            Start Free
+            {t.nav.startFree}
           </button>
         </div>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile: language switcher + menu toggle */}
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSwitcher />
+          <button
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-slate-100 px-4 py-4 flex flex-col gap-4 text-sm font-medium text-slate-700">
-          <a href="#why" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">Why Counseling?</a>
-          <a href="#pricing" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">Plans & Pricing</a>
-          <a href="#testimonials" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">Student Stories</a>
-          <a href="#faq" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">FAQ</a>
+          <a href="#why" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">{t.nav.whyCounseling}</a>
+          <a href="#pricing" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">{t.nav.plans}</a>
+          <a href="#testimonials" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">{t.nav.stories}</a>
+          <a href="#faq" onClick={() => setMenuOpen(false)} className="hover:text-primary-800">{t.nav.faq}</a>
           <button
             onClick={() => { setMenuOpen(false); handleStartFree(); }}
             className="btn-primary text-sm py-2 mt-2"
           >
-            Start Your Assessment
+            {t.nav.startFree}
           </button>
         </div>
       )}
