@@ -139,6 +139,12 @@ CREATE INDEX IF NOT EXISTS idx_upgrade_tokens_token_hash ON upgrade_tokens(token
 CREATE INDEX IF NOT EXISTS idx_upgrade_tokens_assessment_id ON upgrade_tokens(assessment_id);
 
 -- ─────────────────────────────────────────────
+-- Migrations
+-- ─────────────────────────────────────────────
+-- Add language column to assessments if it doesn't exist
+ALTER TABLE assessments ADD COLUMN IF NOT EXISTS language VARCHAR(5) NOT NULL DEFAULT 'en' CHECK (language IN ('en', 'hi'));
+
+-- ─────────────────────────────────────────────
 -- 8. email_logs
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS email_logs (
