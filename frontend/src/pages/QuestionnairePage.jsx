@@ -102,8 +102,11 @@ export default function QuestionnairePage() {
       if (reportData?.data?.upgradeToken) {
         dispatch({ type: 'SET_UPGRADE_TOKEN', payload: reportData.data.upgradeToken });
       }
+      if (reportData?.data?.pdfUrl) {
+        dispatch({ type: 'SET_PDF_URL', payload: reportData.data.pdfUrl });
+      }
       dispatch({ type: 'QUESTIONNAIRE_COMPLETE' });
-      navigate('/thank-you', { state: { planType } });
+      navigate('/thank-you', { state: { planType, pdfUrl: reportData?.data?.pdfUrl } });
     } catch (err) {
       setError(err.message || 'Failed to submit. Please try again.');
       setStep(STEPS.QUESTIONS);
@@ -261,8 +264,11 @@ export function DuplicateQuestionnairePage() {
       if (reportData?.data?.upgradeToken) {
         dispatch({ type: 'SET_UPGRADE_TOKEN', payload: reportData.data.upgradeToken });
       }
+      if (reportData?.data?.pdfUrl) {
+        dispatch({ type: 'SET_PDF_URL', payload: reportData.data.pdfUrl });
+      }
       dispatch({ type: 'QUESTIONNAIRE_COMPLETE' });
-      navigate('/thank-you', { state: { planType } });
+      navigate('/thank-you', { state: { planType, pdfUrl: reportData?.data?.pdfUrl } });
     } catch (err) {
       setError(err.message || 'Failed to submit. Please try again.');
       setStep(STEPS.QUESTIONS);

@@ -7,6 +7,7 @@ const initialState = {
   planType: null,        // 'free' | 'paid'
   currentStep: 'intake', // 'intake' | 'payment' | 'questionnaire' | 'done'
   upgradeToken: null,    // token for free→paid upgrade link
+  pdfUrl: null,          // short-lived signed URL for direct report download
 };
 
 function appReducer(state, action) {
@@ -24,6 +25,8 @@ function appReducer(state, action) {
       return { ...state, planType: action.payload };
     case 'SET_UPGRADE_TOKEN':
       return { ...state, upgradeToken: action.payload };
+    case 'SET_PDF_URL':
+      return { ...state, pdfUrl: action.payload };
     case 'PAYMENT_SUCCESS':
       return { ...state, currentStep: 'questionnaire' };
     case 'QUESTIONNAIRE_COMPLETE':

@@ -9,6 +9,7 @@ const LLMFactory = require('../services/llm/LLMFactory');
 const PDFService = require('../services/pdf/PDFService');
 const EmailService = require('../services/email/EmailService');
 const TokenService = require('../services/token/TokenService');
+const StorageService = require('../services/storage/StorageService');
 const { normalizeEmail } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
@@ -158,10 +159,20 @@ router.post('/generate', async (req, res, next) => {
       language: assessment.language || 'en',
     });
 
+    // Generate a short-lived signed URL so the frontend can offer a direct download
+    let pdfUrl;
+    if (pdfPath) {
+      try {
+        pdfUrl = await StorageService.getSignedUrl(pdfPath, 3600);
+      } catch (_) {
+        // Non-fatal — email delivery is the primary mechanism
+      }
+    }
+
     res.json({
       success: true,
       message: 'Report generated and sent to your email',
-      data: { reportId, assessmentId, upgradeToken: upgradeToken || undefined },
+      data: { reportId, assessmentId, upgradeToken: upgradeToken || undefined, pdfUrl: pdfUrl || undefined },
     });
   } catch (err) {
     next(err);

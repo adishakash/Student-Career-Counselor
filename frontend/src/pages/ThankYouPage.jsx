@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle, Mail, Home, Star } from 'lucide-react';
+import { CheckCircle, Mail, Home, Star, Download } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -12,6 +12,7 @@ export default function ThankYouPage() {
   const { t } = useLanguage();
   const planType = location.state?.planType || state.planType || 'free';
   const email = state.student?.email;
+  const pdfUrl = location.state?.pdfUrl || state.pdfUrl;
   const ty = t.thankYou;
 
   return (
@@ -63,6 +64,18 @@ export default function ThankYouPage() {
           .
         </p>
 
+        {pdfUrl && (
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            {ty.downloadReport}
+          </a>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 mt-2">
           <Button
             onClick={() => { dispatch({ type: 'RESET' }); navigate('/'); }}
@@ -107,6 +120,7 @@ export function DuplicateThankYouPage() {
   const { state, dispatch } = useApp();
   const planType = location.state?.planType || state.planType || 'free';
   const email = state.student?.email;
+  const pdfUrl = location.state?.pdfUrl || state.pdfUrl;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 py-12 page-enter">
@@ -161,6 +175,18 @@ export function DuplicateThankYouPage() {
           </a>
           .
         </p>
+
+        {pdfUrl && (
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 mb-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download Your Report Here
+          </a>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 mt-2">
           <Button
