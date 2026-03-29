@@ -41,6 +41,22 @@ const C = {
 // Section accent rotation — keeps each section a different colour
 const SECTION_COLORS = [C.purple, C.pink, C.green, C.sky, C.yellow, C.coral, C.purple, C.pink];
 
+// ── Brochure-style palette for the FREE report (green + yellow) ──────────────
+const CF = {
+  green:       '#0D9A58',
+  greenLight:  '#34C077',
+  greenPale:   '#DCFCE7',
+  greenDark:   '#064E3B',
+  yellow:      '#F5C400',
+  yellowPale:  '#FFFBE6',
+  yellowDark:  '#713F12',
+  white:       '#FFFFFF',
+  dark:        '#111827',
+  bodyText:    '#1F2937',
+  mutedText:   '#6B7280',
+  rule:        '#D1FAE5',
+};
+
 // ── Page constants (A4 in points) ────────────────────────────────────────────
 const PW = 595.28;
 const PH = 841.89;
@@ -447,15 +463,261 @@ const PDFService = {
       );
   },
 
+  // ── Free Report — brochure-style helpers (green + yellow) ──────────────────
+
+  /** Brochure-style header: full green background with yellow blob decorations */
+  _drawFreeHeader(doc, company, student, language) {
+    const hh = 162;
+    const L = getLabels(language);
+
+    // Full green background
+    PDFService._rect(doc, 0, 0, PW, hh, CF.green);
+
+    // Yellow blob — large circle, top-right (mirrors brochure cover)
+    PDFService._roundRect(doc, PW - 110, -55, 170, 170, 85, CF.yellow);
+    // Yellow blob — medium circle, bottom-left
+    PDFService._roundRect(doc, -35, hh - 68, 110, 110, 55, CF.yellow);
+    // Small greenLight accent circle — lower-mid
+    PDFService._roundRect(doc, ML - 8, hh - 18, 50, 50, 25, CF.greenLight);
+
+    // Rounded white edge blending header into page
+    PDFService._roundRect(doc, -20, hh - 14, PW + 40, 28, 14, CF.white);
+
+    // Badge — yellow pill, top-right
+    PDFService._roundRect(doc, PW - ML - 116, 14, 116, 24, 12, CF.yellow);
+    PDFService._fc(doc, CF.greenDark);
+    doc.fontSize(9).font('Helvetica-Bold')
+      .text('\u2726 FREE REPORT', PW - ML - 116, 20, { width: 116, align: 'center' });
+
+    // Company name — white, bold
+    PDFService._fc(doc, CF.white);
+    doc.fontSize(24).font('Helvetica-Bold').text(company.name, ML, 22);
+
+    // Tagline — pale green
+    PDFService._fc(doc, CF.greenPale);
+    doc.fontSize(10).font('Helvetica').text('Your Personal Career Counseling Report', ML, 54);
+
+    // Student greeting — yellow, large
+    PDFService._fc(doc, CF.yellow);
+    doc.fontSize(16).font('Helvetica-Bold')
+      .text(L.greeting(student.name), ML, 86, { width: CW - 130 });
+
+    doc.y = hh + 18;
+    doc.x = ML;
+  },
+
+  /** Student info card — green-pale background with green left accent bar */
+  _drawFreeStudentCard(doc, student) {
+    const y = doc.y;
+    const h = 50;
+    PDFService._roundRect(doc, ML, y, CW, h, 8, CF.greenPale);
+    PDFService._roundRect(doc, ML, y, 6, h, 3, CF.green);
+
+    const tx = ML + 20;
+    PDFService._fc(doc, CF.dark);
+    doc.fontSize(13).font('Helvetica-Bold').text(student.name, tx, y + 8);
+
+    const meta = [`Class ${student.standard}`, `Age ${student.age}`, student.email]
+      .filter(Boolean).join('   \u00B7   ');
+    PDFService._fc(doc, CF.mutedText);
+    doc.fontSize(9.5).font('Helvetica').text(meta, tx, y + 28);
+
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    PDFService._fc(doc, CF.mutedText);
+    doc.fontSize(8.5).font('Helvetica')
+      .text(dateStr, ML, y + 10, { width: CW, align: 'right' });
+
+    doc.y = y + h + 18;
+    doc.x = ML;
+  },
+
+  /**
+   * Section title banner.
+   * useYellow=true  → yellow background, dark green text (for alternating contrast)
+   * useYellow=false → green background, white text
+   */
+  _drawFreeSectionTitle(doc, title, useYellow) {
+    const bg = useYellow ? CF.yellow : CF.green;
+    const fg = useYellow ? CF.greenDark : CF.white;
+    const y = doc.y;
+    const h = 28;
+    PDFService._roundRect(doc, ML, y, CW, h, 6, bg);
+    PDFService._roundRect(doc, ML, y, 7, h, 3, useYellow ? CF.yellowDark : CF.greenDark);
+    PDFService._fc(doc, fg);
+    doc.fontSize(12.5).font('Helvetica-Bold')
+      .text(title, ML + 18, y + 8, { width: CW - 22 });
+    doc.y = y + h + 10;
+    doc.x = ML;
+  },
+
+  /** Strength pills — alternating green-pale / yellow-pale tags */
+  _drawFreeStrengthTags(doc, strengths) {
+    const tagBgs = [CF.greenPale, CF.yellowPale, CF.greenPale, CF.yellowPale, CF.greenPale, CF.yellowPale];
+    const tagFgs = [CF.green, CF.yellowDark, CF.greenDark, CF.yellowDark, CF.green, CF.greenDark];
+    let x = ML;
+    const startY = doc.y;
+    let rowY = startY;
+
+    strengths.forEach((s, i) => {
+      const tw = Math.min(doc.widthOfString(s, { fontSize: 10 }) + 28, CW);
+      const th = 24;
+      if (x + tw > PW - ML + 4 && x !== ML) { x = ML; rowY += th + 8; }
+      PDFService._roundRect(doc, x, rowY, tw, th, 12, tagBgs[i % tagBgs.length]);
+      const dR = parseInt(tagFgs[i % tagFgs.length].slice(1, 3), 16);
+      const dG = parseInt(tagFgs[i % tagFgs.length].slice(3, 5), 16);
+      const dB = parseInt(tagFgs[i % tagFgs.length].slice(5, 7), 16);
+      doc.circle(x + 11, rowY + 12, 3).fillColor(dR, dG, dB).fill();
+      PDFService._fc(doc, tagFgs[i % tagFgs.length]);
+      doc.fontSize(10).font('Helvetica-Bold')
+        .text(s, x + 20, rowY + 7, { width: tw - 24, lineBreak: false });
+      x += tw + 8;
+    });
+
+    doc.y = rowY + 32 + 8;
+    doc.x = ML;
+  },
+
+  /** Career card — numbered circle + green/yellow left stripe */
+  _drawFreeCareerCard(doc, career, index, L) {
+    if (doc.y > PH - 170) { doc.addPage(); doc.y = 40; doc.x = ML; }
+
+    const stripes = [CF.green, CF.yellow, CF.greenLight, CF.green, CF.yellow];
+    const numFgs  = [CF.white,  CF.greenDark, CF.white,     CF.white, CF.greenDark];
+    const ci = index % stripes.length;
+    const tx = ML + 18;
+    const tw = CW - 22;
+    const startY = doc.y;
+    let curY = startY + 10;
+
+    // Numbered circle
+    PDFService._roundRect(doc, ML + 8, curY - 2, 22, 22, 11, stripes[ci]);
+    PDFService._fc(doc, numFgs[ci]);
+    doc.fontSize(10).font('Helvetica-Bold')
+      .text(`${index + 1}`, ML + 8, curY + 2, { width: 22, align: 'center' });
+
+    // Career title
+    PDFService._fc(doc, CF.greenDark);
+    doc.fontSize(12).font('Helvetica-Bold')
+      .text(career.title || 'Career Path', tx + 22, curY, { width: tw - 28 });
+    curY = doc.y + 4;
+
+    // Fit badge
+    if (career.fit) {
+      const fitBg = career.fit === 'High' ? CF.green   : career.fit === 'Medium' ? CF.yellow     : CF.greenPale;
+      const fitFg = career.fit === 'High' ? CF.white   : career.fit === 'Medium' ? CF.yellowDark : CF.green;
+      PDFService._roundRect(doc, tx, curY, 72, 18, 9, fitBg);
+      PDFService._fc(doc, fitFg);
+      doc.fontSize(8.5).font('Helvetica-Bold')
+        .text(`${career.fit} Match`, tx, curY + 4, { width: 72, align: 'center' });
+      curY += 24;
+    }
+
+    // Description
+    if (career.description) {
+      PDFService._fc(doc, CF.bodyText);
+      doc.fontSize(10).font('Helvetica').text(career.description, tx, curY, { width: tw });
+      curY = doc.y + 6;
+    }
+
+    // Left coloured stripe
+    PDFService._rect(doc, ML, startY, 5, curY - startY + 6, stripes[ci]);
+
+    // Separator rule
+    const rR = parseInt(CF.rule.slice(1, 3), 16);
+    const rG = parseInt(CF.rule.slice(3, 5), 16);
+    const rB = parseInt(CF.rule.slice(5, 7), 16);
+    doc.moveTo(ML, curY + 4).lineTo(PW - ML, curY + 4)
+      .strokeColor(rR, rG, rB).lineWidth(0.4).stroke();
+
+    doc.y = curY + 14;
+    doc.x = ML;
+  },
+
+  /** Upgrade CTA — yellow panel with green top stripe + brochure-style blob accents */
+  _drawFreeUpgradeCTA(doc, upgradeToken, company, language) {
+    const isHindi = language === 'hi';
+    if (doc.y > PH - 140) { doc.addPage(); doc.y = 40; doc.x = ML; }
+
+    const y = doc.y;
+    const h = 112;
+    const upgradeUrl = `${company.website}/upgrade?token=${upgradeToken}`;
+
+    // Yellow background
+    PDFService._roundRect(doc, ML, y, CW, h, 10, CF.yellowPale);
+    // Green top accent stripe
+    PDFService._roundRect(doc, ML, y, CW, 7, 5, CF.green);
+    // Decorative circles (brochure style)
+    PDFService._roundRect(doc, PW - ML - 30, y + h - 34, 26, 26, 13, CF.yellow);
+    PDFService._roundRect(doc, ML + 4, y + 8, 18, 18, 9, CF.greenPale);
+
+    PDFService._fc(doc, CF.greenDark);
+    doc.fontSize(14).font('Helvetica-Bold')
+      .text(
+        isHindi ? '\u2B50 Full Report Unlock Karo \u2014 Sirf \u20B9499!' : '\u2B50 Unlock Your Full Report \u2014 Just \u20B9499!',
+        ML + 14, y + 18, { width: CW - 60 },
+      );
+
+    PDFService._fc(doc, CF.dark);
+    doc.fontSize(10).font('Helvetica')
+      .text(
+        isHindi
+          ? '6+ career paths, deep personality insights aur personalised action plan pao.'
+          : 'Get 6+ career paths, personality insights, academic roadmap & a personalised action plan.',
+        ML + 14, y + 44, { width: CW - 28 },
+      );
+
+    PDFService._fc(doc, CF.green);
+    doc.fontSize(10.5).font('Helvetica-Bold')
+      .text(
+        isHindi ? `Abhi Upgrade Karo \u2192 ${upgradeUrl}` : `Upgrade Now \u2192 ${upgradeUrl}`,
+        ML + 14, y + 82, { width: CW - 28, link: upgradeUrl, underline: true },
+      );
+
+    doc.y = y + h + 16;
+    doc.x = ML;
+  },
+
+  /** Motivation box — green-pale background with green top stripe */
+  _drawFreeMotivationBox(doc, text) {
+    if (!text) return;
+    if (doc.y > PH - 100) { doc.addPage(); doc.y = 40; doc.x = ML; }
+    const y = doc.y;
+    const h = 76;
+    PDFService._roundRect(doc, ML, y, CW, h, 10, CF.greenPale);
+    PDFService._roundRect(doc, ML, y, CW, 5, 5, CF.green);
+    PDFService._fc(doc, CF.green);
+    doc.fontSize(24).font('Helvetica-Bold').text('\u2726', ML + 14, y + 12);
+    PDFService._fc(doc, CF.dark);
+    doc.fontSize(10.5).font('Helvetica-Oblique')
+      .text(text, ML + 46, y + 16, { width: CW - 60 });
+    doc.y = y + h + 14;
+    doc.x = ML;
+  },
+
+  /** Footer — green bar + yellow accent strip at very bottom */
+  _drawFreeFooter(doc, company) {
+    const fy = PH - 38;
+    PDFService._rect(doc, 0, fy, PW, 32, CF.green);
+    PDFService._rect(doc, 0, fy + 32, PW, 7, CF.yellow);
+    PDFService._fc(doc, CF.white);
+    doc.fontSize(8.5).font('Helvetica')
+      .text(
+        `${company.name}  \u00B7  ${company.email}  \u00B7  ${company.address || 'India'}`,
+        ML, fy + 10, { width: CW, align: 'center' },
+      );
+  },
+
   // ── Free Report ───────────────────────────────────────────────────────────────
   _buildFreeReport(doc, student, report, upgradeToken, company, language = 'en') {
     const L = getLabels(language);
-    PDFService._drawHeader(doc, company, 'free', student, language);
-    PDFService._drawStudentCard(doc, student);
 
-    // Career Overview
-    PDFService._drawSectionTitle(doc, L.careerOverview, C.purple);
-    PDFService._fc(doc, C.bodyText);
+    // Brochure-style header (green + yellow blobs)
+    PDFService._drawFreeHeader(doc, company, student, language);
+    PDFService._drawFreeStudentCard(doc, student);
+
+    // Career Overview — green section
+    PDFService._drawFreeSectionTitle(doc, L.careerOverview, false);
+    PDFService._fc(doc, CF.bodyText);
     doc.fontSize(10.5).font('Helvetica')
       .text(
         report.summary || 'Based on your responses, here is a personalised overview of your career potential.',
@@ -464,30 +726,32 @@ const PDFService = {
     doc.moveDown(1.2);
     doc.x = ML;
 
-    // Key Strengths — colorful tags
-    PDFService._drawSectionTitle(doc, L.keyStrengths, C.pink);
-    PDFService._drawStrengthTags(doc, report.strengths || []);
+    // Key Strengths — yellow section header, green/yellow tag pills
+    PDFService._drawFreeSectionTitle(doc, L.keyStrengths, true);
+    PDFService._drawFreeStrengthTags(doc, report.strengths || []);
 
-    // Suggested Career Paths
+    // Top 3 Career Paths — green section header
     if (doc.y > PH - 200) { doc.addPage(); doc.y = 40; doc.x = ML; }
-    PDFService._drawSectionTitle(doc, L.careerPaths, C.sky);
+    PDFService._drawFreeSectionTitle(doc, L.careerPaths, false);
     (report.careerSuggestions || []).slice(0, 3)
-      .forEach((s, i) => PDFService._drawCareerCard(doc, s, i, false, L));
+      .forEach((s, i) => PDFService._drawFreeCareerCard(doc, s, i, L));
 
-    // Next Steps
+    // Next Steps — yellow section header, alternating green/yellow bullets
     if (doc.y > PH - 160) { doc.addPage(); doc.y = 40; doc.x = ML; }
-    PDFService._drawSectionTitle(doc, L.nextSteps, C.green);
-    (report.nextSteps || []).slice(0, 4)
-      .forEach((s, i) => PDFService._drawBullet(doc, `${i + 1}.  ${s}`, C.green));
+    PDFService._drawFreeSectionTitle(doc, L.nextSteps, true);
+    (report.nextSteps || []).slice(0, 4).forEach((s, i) =>
+      PDFService._drawBullet(doc, `${i + 1}.  ${s}`, i % 2 === 0 ? CF.green : CF.yellow),
+    );
     doc.moveDown(0.8);
 
-    // Motivation
-    PDFService._drawMotivationBox(doc, report.motivation);
+    // Motivation box
+    PDFService._drawFreeMotivationBox(doc, report.motivation);
 
-    // Upgrade CTA
-    if (upgradeToken) PDFService._drawUpgradeCTA(doc, upgradeToken, company, language);
+    // Upgrade CTA — yellow panel with green accent
+    if (upgradeToken) PDFService._drawFreeUpgradeCTA(doc, upgradeToken, company, language);
 
-    PDFService._drawFooter(doc, company);
+    // Footer — green + yellow accent strip
+    PDFService._drawFreeFooter(doc, company);
   },
 
   // ── Paid Report ───────────────────────────────────────────────────────────────
